@@ -24,16 +24,16 @@ const COLORS = [
   "#00273B",
 ];
 
-const fmt = (n: number | null, d = 0) =>
+export const fmt = (n: number | null, d = 0) =>
   n == null
     ? "—"
     : n.toLocaleString("en-US", {
         minimumFractionDigits: d,
         maximumFractionDigits: d,
       });
-const fmtDollar = (n: number | null, d = 0) =>
+export const fmtDollar = (n: number | null, d = 0) =>
   n == null ? "—" : "$" + fmt(n, d);
-const fmtPct = (n: number | null, d = 2) =>
+export const fmtPct = (n: number | null, d = 2) =>
   n == null ? "—" : (n * 100).toFixed(d) + "%";
 
 function InfoTip({ text }: { text: string }) {
