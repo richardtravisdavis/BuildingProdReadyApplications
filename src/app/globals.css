@@ -2,12 +2,48 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
+@font-face {
+  font-family: "Stolzl";
+  src: url("/fonts/stolzl-light.woff2") format("woff2"),
+       url("/fonts/stolzl-light.woff") format("woff");
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Stolzl";
+  src: url("/fonts/stolzl-book.woff2") format("woff2"),
+       url("/fonts/stolzl-book.woff") format("woff");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Stolzl";
+  src: url("/fonts/stolzl-medium.woff2") format("woff2"),
+       url("/fonts/stolzl-medium.woff") format("woff");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Stolzl";
+  src: url("/fonts/stolzl-bold.woff2") format("woff2"),
+       url("/fonts/stolzl-bold.woff") format("woff");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-sans);
+  --font-sans: "Stolzl", "Century Gothic", "CenturyGothic", sans-serif;
   --font-mono: var(--font-geist-mono);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
