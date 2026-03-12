@@ -1,14 +1,19 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import CresoraLogo from "@/components/cresora-logo";
+import FadeIn from "@/components/fade-in";
 
 export default function Home() {
   return (
     <div className="min-h-screen flex flex-col">
       {/* Nav */}
-      <nav className="bg-[#00273B] border-b border-[#00273B]">
+      <nav className="bg-[#00273B] border-b border-[#003350]">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
-          <span className="text-xl font-bold text-white">Cresora Commerce</span>
+          <div className="flex items-center gap-2">
+            <CresoraLogo size={32} />
+            <span className="text-xl font-bold text-white">Cresora Commerce</span>
+          </div>
           <div className="flex gap-2">
             <Link href="/login">
               <Button variant="ghost" className="text-gray-300 hover:text-white">Login</Button>
@@ -43,39 +48,45 @@ export default function Home() {
       {/* Feature Cards */}
       <section className="bg-[#003350] px-6 py-20">
         <div className="mx-auto grid max-w-6xl gap-8 md:grid-cols-3">
-          <Card className="bg-[#00273B] border-[#00273B]/60">
-            <CardHeader>
-              <CardTitle className="text-[#FC6200]">Compare Rates</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-gray-300">
-                See how your current processing rates stack up against industry
-                benchmarks and competing providers.
-              </p>
-            </CardContent>
-          </Card>
-          <Card className="bg-[#00273B] border-[#00273B]/60">
-            <CardHeader>
-              <CardTitle className="text-[#68DDDC]">See True Costs</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-gray-300">
-                Uncover hidden fees and understand the total cost of your
-                merchant processing — not just the headline rate.
-              </p>
-            </CardContent>
-          </Card>
-          <Card className="bg-[#00273B] border-[#00273B]/60">
-            <CardHeader>
-              <CardTitle className="text-[#FFA622]">Save Money</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-gray-300">
-                Get a personalized savings estimate and actionable
-                recommendations to reduce your processing costs.
-              </p>
-            </CardContent>
-          </Card>
+          <FadeIn delay={0}>
+            <Card className="bg-[#00273B] border-[#00273B]/60 h-full">
+              <CardHeader>
+                <CardTitle className="text-[#FC6200]">Compare Rates</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-gray-300">
+                  See how your current processing rates stack up against industry
+                  benchmarks and competing providers.
+                </p>
+              </CardContent>
+            </Card>
+          </FadeIn>
+          <FadeIn delay={150}>
+            <Card className="bg-[#00273B] border-[#00273B]/60 h-full">
+              <CardHeader>
+                <CardTitle className="text-[#68DDDC]">See True Costs</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-gray-300">
+                  Uncover hidden fees and understand the total cost of your
+                  merchant processing — not just the headline rate.
+                </p>
+              </CardContent>
+            </Card>
+          </FadeIn>
+          <FadeIn delay={300}>
+            <Card className="bg-[#00273B] border-[#00273B]/60 h-full">
+              <CardHeader>
+                <CardTitle className="text-[#FFA622]">Save Money</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-gray-300">
+                  Get a personalized savings estimate and actionable
+                  recommendations to reduce your processing costs.
+                </p>
+              </CardContent>
+            </Card>
+          </FadeIn>
         </div>
       </section>
 

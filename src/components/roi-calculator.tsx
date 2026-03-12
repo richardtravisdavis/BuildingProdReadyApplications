@@ -208,8 +208,8 @@ function Diff({
   const fmtVal = (v: number) =>
     isCurrency ? fmtDollar(v, 0) : fmtPct(v / 100, 2);
   return (
-    <div className="flex items-center justify-between py-2 border-b border-[#003350]/60 text-sm">
-      <span className="text-gray-300 w-48 flex items-center gap-1">
+    <div className="flex items-center justify-between py-2 border-b border-[#003350]/60 text-xs sm:text-sm gap-2">
+      <span className="text-gray-300 min-w-[120px] sm:w-48 flex items-center gap-1 shrink-0">
         {tag && (
           <span
             className={`text-xs font-semibold px-1.5 py-0.5 rounded ${tag === "Card" ? "bg-[#FC6200]/20 text-[#FC6200]" : "bg-[#68DDDC]/20 text-[#68DDDC]"}`}
@@ -220,12 +220,12 @@ function Diff({
         {label}
         {tip && <InfoTip text={tip} />}
       </span>
-      <span className="text-gray-400 w-28 text-right">{fmtVal(current)}</span>
-      <span className="text-white w-28 text-right font-medium">
+      <span className="text-gray-400 w-20 sm:w-28 text-right shrink-0">{fmtVal(current)}</span>
+      <span className="text-white w-20 sm:w-28 text-right font-medium shrink-0">
         {fmtVal(cresora)}
       </span>
       <span
-        className={`w-28 text-right font-semibold ${good ? "text-emerald-400" : "text-red-400"}`}
+        className={`w-24 sm:w-28 text-right font-semibold shrink-0 ${good ? "text-emerald-400" : "text-red-400"}`}
       >
         {delta > 0 ? "+" : ""}
         {isCurrency ? fmtDollar(delta, 0) : fmtPct(delta / 100, 2)} (
@@ -703,7 +703,7 @@ export default function ROICalculator() {
               </Field>
             </Section>
 
-            <div className="mb-6 grid grid-cols-2 md:grid-cols-4 gap-3">
+            <div className="mb-6 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
               <KPI label="Total Monthly Card Volume" value={fmtDollar(merchants * avgMonthlyVol)} sub="per month, portfolio" tip={T.avgVol} />
               <KPI label="Total Monthly Card Txns" value={fmt(merchants * avgMonthlyTxn)} sub="per month, portfolio" tip={T.avgTxn} />
               <KPI label="Total Monthly ACH Volume" value={fmtDollar(merchants * achMonthlyVol)} sub="per month, portfolio" teal tip={T.achVol} />
@@ -834,7 +834,7 @@ export default function ROICalculator() {
         {/* SUMMARY TAB */}
         {tab === "summary" && (
           <div>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 mb-4">
               <KPI label="Total Annual Card Volume" value={fmtDollar(calc.annualCardVol)} sub={`${fmt(calc.annualCardTxn)} txns/yr`} />
               <KPI label="Total Annual ACH Volume" value={fmtDollar(calc.annualAchVol)} sub={`${fmt(calc.annualAchTxn)} txns/yr`} teal />
               <KPI label="Combined Annual Volume" value={fmtDollar(calc.annualTotalVol)} sub={`ACH is ${achVolPct}% of volume`} tip={T.totalVolume} />
@@ -873,7 +873,7 @@ export default function ROICalculator() {
             {/* Rev Share */}
             <div className="bg-[#003350]/60 border border-[#003350] rounded-2xl p-5 mb-6">
               <h3 className="text-sm font-semibold text-[#FC6200] uppercase tracking-widest mb-4">Revenue Share / Residual Analysis</h3>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-4">
                 <KPI label="Residual Pool (Est.)" value={fmtDollar(calc.grossResidualPool)} sub="~50bps of total volume" tip={T.residualPool} />
                 <KPI label="Current ISV Share" value={fmtDollar(calc.currentResidual)} sub={`${revenueSharePct}% split`} />
                 <KPI label="Cresora ISV Share" value={fmtDollar(calc.cresoraResidual)} sub={`${cresoraRevSharePct}% split`} accent />
@@ -893,34 +893,38 @@ export default function ROICalculator() {
             {/* Cost Breakdown */}
             <div className="bg-[#003350]/60 border border-[#003350] rounded-2xl p-5 mb-6">
               <h3 className="text-sm font-semibold text-[#FC6200] uppercase tracking-widest mb-3">Annual Cost Breakdown — Current vs. Cresora</h3>
-              <div className="flex items-center justify-between py-2 border-b border-[#003350] mb-1 text-xs font-semibold text-gray-400">
-                <span className="w-48">Cost Category</span>
-                <span className="w-28 text-right">Current</span>
-                <span className="w-28 text-right">Cresora</span>
-                <span className="w-28 text-right">Delta</span>
-              </div>
-              <Diff tag="Card" label="Processing Fees" current={calc.currentCardProcessing} cresora={calc.cresoraCardProcessing} tip="Annual interchange + markup cost on card volume across the full portfolio." />
-              <Diff tag="Card" label="Per-Txn Fees" current={calc.currentCardPerTxn} cresora={calc.cresoraCardPerTxn} tip="Flat per-transaction fees on all card transactions." />
-              <Diff tag="ACH" label="ACH Fees + Returns" current={calc.currentAchCost} cresora={calc.cresoraAchCost} tip="Combined ACH per-item fees and return/NSF fees." />
-              <Diff tag="Card" label="Gateway Fees" current={calc.currentGatewayCost} cresora={0} tip="Monthly gateway fees per merchant, eliminated by Cresora's embedded orchestration layer." />
-              <Diff label="PCI Compliance" current={calc.currentPCICost} cresora={calc.cresoraPCICost} tip="Annual PCI DSS compliance costs. Reduced ~60% via hosted tokenization." />
-              <Diff tag="Card" label="Chargebacks (fees+labor)" current={calc.currentCbCost} cresora={calc.cresoraCbCost} tip="Card dispute fees plus internal labor." />
-              <Diff tag="Card" label="Card Returns" current={calc.currentReturnCost} cresora={calc.cresoraReturnCost} tip="Annual card refund/return processing fees." />
-              <Diff label="API / Dev Costs" current={calc.currentApiAnnual} cresora={calc.cresoraApiAnnual} tip="API licensing + internal engineering labor." />
-              <Diff label="Onboarding Costs" current={calc.currentOnboardAnnual} cresora={calc.cresoraOnboardAnnual} tip="Annual merchant onboarding costs." />
-              <div className="mt-3 pt-3 border-t border-[#FC6200]/40 space-y-1">
-                {[
-                  { label: "Card Auth Rate Lift", val: calc.authLiftRevenue, tip: T.authLift },
-                  { label: "Funding Speed Value", val: calc.fundingValue, tip: "Working capital value from faster settlement on combined card + ACH volume." },
-                  { label: "Merchant Retention (LTV)", val: calc.churnSavings, tip: "LTV preserved by reducing merchant churn." },
-                ].map((r, i) => (
-                  <div key={i} className="flex items-center justify-between text-sm font-bold">
-                    <span className="w-48 text-white flex items-center">{r.label}<InfoTip text={r.tip} /></span>
-                    <span className="w-28 text-right text-gray-400">—</span>
-                    <span className="w-28 text-right text-emerald-400">+{fmtDollar(r.val)}</span>
-                    <span className="w-28 text-right text-emerald-400">+{fmtDollar(r.val)}</span>
+              <div className="overflow-x-auto -mx-5 px-5">
+                <div className="min-w-[560px]">
+                  <div className="flex items-center justify-between py-2 border-b border-[#003350] mb-1 text-xs font-semibold text-gray-400">
+                    <span className="w-48">Cost Category</span>
+                    <span className="w-28 text-right">Current</span>
+                    <span className="w-28 text-right">Cresora</span>
+                    <span className="w-28 text-right">Delta</span>
                   </div>
-                ))}
+                  <Diff tag="Card" label="Processing Fees" current={calc.currentCardProcessing} cresora={calc.cresoraCardProcessing} tip="Annual interchange + markup cost on card volume across the full portfolio." />
+                  <Diff tag="Card" label="Per-Txn Fees" current={calc.currentCardPerTxn} cresora={calc.cresoraCardPerTxn} tip="Flat per-transaction fees on all card transactions." />
+                  <Diff tag="ACH" label="ACH Fees + Returns" current={calc.currentAchCost} cresora={calc.cresoraAchCost} tip="Combined ACH per-item fees and return/NSF fees." />
+                  <Diff tag="Card" label="Gateway Fees" current={calc.currentGatewayCost} cresora={0} tip="Monthly gateway fees per merchant, eliminated by Cresora's embedded orchestration layer." />
+                  <Diff label="PCI Compliance" current={calc.currentPCICost} cresora={calc.cresoraPCICost} tip="Annual PCI DSS compliance costs. Reduced ~60% via hosted tokenization." />
+                  <Diff tag="Card" label="Chargebacks (fees+labor)" current={calc.currentCbCost} cresora={calc.cresoraCbCost} tip="Card dispute fees plus internal labor." />
+                  <Diff tag="Card" label="Card Returns" current={calc.currentReturnCost} cresora={calc.cresoraReturnCost} tip="Annual card refund/return processing fees." />
+                  <Diff label="API / Dev Costs" current={calc.currentApiAnnual} cresora={calc.cresoraApiAnnual} tip="API licensing + internal engineering labor." />
+                  <Diff label="Onboarding Costs" current={calc.currentOnboardAnnual} cresora={calc.cresoraOnboardAnnual} tip="Annual merchant onboarding costs." />
+                  <div className="mt-3 pt-3 border-t border-[#FC6200]/40 space-y-1">
+                    {[
+                      { label: "Card Auth Rate Lift", val: calc.authLiftRevenue, tip: T.authLift },
+                      { label: "Funding Speed Value", val: calc.fundingValue, tip: "Working capital value from faster settlement on combined card + ACH volume." },
+                      { label: "Merchant Retention (LTV)", val: calc.churnSavings, tip: "LTV preserved by reducing merchant churn." },
+                    ].map((r, i) => (
+                      <div key={i} className="flex items-center justify-between text-sm font-bold">
+                        <span className="w-48 text-white flex items-center">{r.label}<InfoTip text={r.tip} /></span>
+                        <span className="w-28 text-right text-gray-400">—</span>
+                        <span className="w-28 text-right text-emerald-400">+{fmtDollar(r.val)}</span>
+                        <span className="w-28 text-right text-emerald-400">+{fmtDollar(r.val)}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -954,7 +958,7 @@ export default function ROICalculator() {
 
             <div className="bg-gradient-to-r from-[#00273B]/60 to-[#003350]/60 border border-[#FC6200]/50 rounded-2xl p-5">
               <h3 className="text-sm font-semibold text-[#FC6200] uppercase tracking-widest mb-4">ROI Snapshot</h3>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
                 <KPI label="Monthly Savings" value={fmtDollar(calc.totalSavings / 12)} sub="hard cost reduction" />
                 <KPI label="Annual Total ROI" value={fmtDollar(calc.totalWithResidual)} sub="savings + residual uplift" accent />
                 <KPI label="ETF Payback Period" value={termFee > 0 ? `${Math.ceil(termFee / (calc.totalSavings / 12))} mo` : "N/A"} sub="months to recover exit fee" />
@@ -971,7 +975,7 @@ export default function ROICalculator() {
               Single merchant profile: <strong>{fmtDollar(avgMonthlyVol)}/mo card</strong> · <strong>{fmt(avgMonthlyTxn)} card txns/mo</strong> · <strong className="text-[#68DDDC]">{fmtDollar(achMonthlyVol)}/mo ACH</strong> · <strong className="text-[#68DDDC]">{fmt(achMonthlyTxn)} ACH txns/mo</strong>
             </div>
 
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 mb-6">
               <KPI label="Annual Card Volume" value={fmtDollar(merchantCalc.cardVol)} />
               <KPI label="Annual ACH Volume" value={fmtDollar(merchantCalc.achVol)} teal />
               <KPI label="Current Annual Fees (All-in)" value={fmtDollar(merchantCalc.currentFees)} />
