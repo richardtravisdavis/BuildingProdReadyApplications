@@ -15,13 +15,13 @@ import {
 } from "recharts";
 
 const COLORS = [
-  "#6366f1",
-  "#10b981",
-  "#f59e0b",
-  "#ef4444",
-  "#3b82f6",
-  "#8b5cf6",
-  "#ec4899",
+  "#FC6200",
+  "#68DDDC",
+  "#FFA622",
+  "#DADB5F",
+  "#AD44A9",
+  "#730071",
+  "#00273B",
 ];
 
 const fmt = (n: number | null, d = 0) =>
@@ -60,7 +60,7 @@ function InfoTip({ text }: { text: string }) {
         onMouseEnter={() => setOpen(true)}
         onMouseLeave={() => setOpen(false)}
         onClick={() => setOpen((v) => !v)}
-        className="w-4 h-4 rounded-full bg-gray-600 hover:bg-indigo-500 text-white flex items-center justify-center transition-colors flex-shrink-0"
+        className="w-4 h-4 rounded-full bg-[#003350] hover:bg-[#FC6200] text-white flex items-center justify-center transition-colors flex-shrink-0"
         style={{ fontSize: "10px", lineHeight: 1 }}
         tabIndex={0}
         aria-label="More info"
@@ -69,12 +69,12 @@ function InfoTip({ text }: { text: string }) {
       </button>
       {open && (
         <div
-          className={`absolute z-50 w-60 bg-gray-900 border border-indigo-700/60 rounded-xl shadow-2xl px-3 py-2.5 text-xs text-gray-200 leading-relaxed pointer-events-none
+          className={`absolute z-50 w-60 bg-[#00273B] border border-[#FC6200]/60 rounded-xl shadow-2xl px-3 py-2.5 text-xs text-gray-200 leading-relaxed pointer-events-none
           ${pos === "right" ? "left-6 top-1/2 -translate-y-1/2" : "right-6 top-1/2 -translate-y-1/2"}`}
           style={{ minWidth: "220px" }}
         >
           <div
-            className={`absolute top-1/2 -translate-y-1/2 w-2 h-2 bg-gray-900 border-indigo-700/60 rotate-45 ${pos === "right" ? "-left-1 border-b border-l" : "-right-1 border-t border-r"}`}
+            className={`absolute top-1/2 -translate-y-1/2 w-2 h-2 bg-[#00273B] border-[#FC6200]/60 rotate-45 ${pos === "right" ? "-left-1 border-b border-l" : "-right-1 border-t border-r"}`}
           />
           {text}
         </div>
@@ -124,12 +124,12 @@ function Section({
       <div className="mb-3 flex items-center gap-2">
         <div>
           <div className="flex items-center gap-2">
-            <h3 className="text-sm font-semibold text-indigo-300 uppercase tracking-widest">
+            <h3 className="text-sm font-semibold text-[#FC6200] uppercase tracking-widest">
               {title}
             </h3>
             {badge && (
               <span
-                className={`text-xs font-semibold px-2 py-0.5 rounded-full ${badge === "Card" ? "bg-indigo-900/60 text-indigo-300 border border-indigo-700" : "bg-teal-900/60 text-teal-300 border border-teal-700"}`}
+                className={`text-xs font-semibold px-2 py-0.5 rounded-full ${badge === "Card" ? "bg-[#FC6200]/20 text-[#FC6200] border border-[#FC6200]/40" : "bg-[#68DDDC]/20 text-[#68DDDC] border border-[#68DDDC]/40"}`}
               >
                 {badge}
               </span>
@@ -150,7 +150,7 @@ function Section({
 }
 
 const inp =
-  "bg-gray-800 border border-gray-700 text-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-indigo-500 w-full";
+  "bg-[#003350] border border-[#00273B]/60 text-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#FC6200] w-full";
 
 function KPI({
   label,
@@ -169,14 +169,14 @@ function KPI({
 }) {
   return (
     <div
-      className={`rounded-xl p-4 border ${accent ? "border-indigo-500 bg-indigo-900/30" : teal ? "border-teal-600 bg-teal-900/20" : "border-gray-700 bg-gray-800/60"}`}
+      className={`rounded-xl p-4 border ${accent ? "border-[#FC6200] bg-[#FC6200]/10" : teal ? "border-[#68DDDC] bg-[#68DDDC]/10" : "border-[#003350] bg-[#003350]/60"}`}
     >
       <div className="text-xs text-gray-400 mb-1 flex items-center">
         {label}
         {tip && <InfoTip text={tip} />}
       </div>
       <div
-        className={`text-xl font-bold ${accent ? "text-indigo-300" : teal ? "text-teal-300" : "text-white"}`}
+        className={`text-xl font-bold ${accent ? "text-[#FC6200]" : teal ? "text-[#68DDDC]" : "text-white"}`}
       >
         {value}
       </div>
@@ -208,11 +208,11 @@ function Diff({
   const fmtVal = (v: number) =>
     isCurrency ? fmtDollar(v, 0) : fmtPct(v / 100, 2);
   return (
-    <div className="flex items-center justify-between py-2 border-b border-gray-700/60 text-sm">
+    <div className="flex items-center justify-between py-2 border-b border-[#003350]/60 text-sm">
       <span className="text-gray-300 w-48 flex items-center gap-1">
         {tag && (
           <span
-            className={`text-xs font-semibold px-1.5 py-0.5 rounded ${tag === "Card" ? "bg-indigo-900/60 text-indigo-300" : "bg-teal-900/60 text-teal-300"}`}
+            className={`text-xs font-semibold px-1.5 py-0.5 rounded ${tag === "Card" ? "bg-[#FC6200]/20 text-[#FC6200]" : "bg-[#68DDDC]/20 text-[#68DDDC]"}`}
           >
             {tag}
           </span>
@@ -673,7 +673,7 @@ export default function ROICalculator() {
   return (
     <div className="text-gray-100 font-sans">
       <div className="max-w-7xl mx-auto px-4 py-6">
-        <div className="flex gap-2 mb-8 border-b border-gray-800 overflow-x-auto">
+        <div className="flex gap-2 mb-8 border-b border-[#003350] overflow-x-auto">
           {[
             { id: "isv", label: "ISV Portfolio Input" },
             { id: "summary", label: "ISV ROI Summary" },
@@ -685,7 +685,7 @@ export default function ROICalculator() {
               onClick={() => setTab(t.id)}
               className={`px-4 py-2.5 text-sm font-medium border-b-2 transition-all -mb-px whitespace-nowrap ${
                 tab === t.id
-                  ? "border-indigo-500 text-indigo-300"
+                  ? "border-[#FC6200] text-[#FC6200]"
                   : "border-transparent text-gray-400 hover:text-gray-200"
               }`}
             >
@@ -722,8 +722,8 @@ export default function ROICalculator() {
               </Field>
               <Field label="Card Present vs. Not Present Mix" tip={T.cpPct}>
                 <div className="flex items-center gap-2">
-                  <input type="range" min={0} max={100} value={cpPct} onChange={(e) => setCpPct(+e.target.value)} className="flex-1 accent-indigo-500" />
-                  <span className="text-sm text-indigo-300 w-28 text-right whitespace-nowrap">CP {cpPct}% / CNP {100 - cpPct}%</span>
+                  <input type="range" min={0} max={100} value={cpPct} onChange={(e) => setCpPct(+e.target.value)} className="flex-1 accent-[#FC6200]" />
+                  <span className="text-sm text-[#FC6200] w-28 text-right whitespace-nowrap">CP {cpPct}% / CNP {100 - cpPct}%</span>
                 </div>
               </Field>
               <Field label="Current Authorization Rate" hint="%" tip={T.authRate}>
@@ -824,7 +824,7 @@ export default function ROICalculator() {
             </Section>
 
             <div className="mt-4">
-              <button onClick={() => setTab("summary")} className="bg-indigo-600 hover:bg-indigo-500 text-white font-semibold px-8 py-3 rounded-xl transition-all">
+              <button onClick={() => setTab("summary")} className="bg-[#FC6200] hover:bg-[#FC6200] text-white font-semibold px-8 py-3 rounded-xl transition-all">
                 View ROI Summary →
               </button>
             </div>
@@ -846,21 +846,21 @@ export default function ROICalculator() {
             </div>
 
             {/* Effective Rate */}
-            <div className="bg-gray-800/60 border border-gray-700 rounded-2xl p-5 mb-6">
-              <h3 className="text-sm font-semibold text-indigo-300 uppercase tracking-widest mb-1 flex items-center">
+            <div className="bg-[#003350]/60 border border-[#003350] rounded-2xl p-5 mb-6">
+              <h3 className="text-sm font-semibold text-[#FC6200] uppercase tracking-widest mb-1 flex items-center">
                 Blended Effective Rate — Card + ACH Combined <InfoTip text={T.effectiveRate} />
               </h3>
               <p className="text-xs text-gray-400 mb-4">Calculated across total portfolio volume ({fmtDollar(calc.annualTotalVol)}/yr)</p>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="text-center bg-gray-900 rounded-xl p-4 border border-gray-700">
+                <div className="text-center bg-[#00273B] rounded-xl p-4 border border-[#003350]">
                   <div className="text-xs text-gray-400 mb-1">Current Effective Rate</div>
                   <div className="text-3xl font-bold text-white">{fmtPct(calc.currentEffectiveRate)}</div>
                   <div className="text-xs text-gray-500 mt-1">all-in on total volume</div>
                 </div>
-                <div className="text-center bg-indigo-900/40 rounded-xl p-4 border border-indigo-600">
-                  <div className="text-xs text-indigo-300 mb-1">Cresora Effective Rate</div>
-                  <div className="text-3xl font-bold text-indigo-300">{fmtPct(calc.cresoraEffectiveRate)}</div>
-                  <div className="text-xs text-indigo-400/70 mt-1">projected all-in</div>
+                <div className="text-center bg-[#FC6200]/15 rounded-xl p-4 border border-[#FC6200]">
+                  <div className="text-xs text-[#FC6200] mb-1">Cresora Effective Rate</div>
+                  <div className="text-3xl font-bold text-[#FC6200]">{fmtPct(calc.cresoraEffectiveRate)}</div>
+                  <div className="text-xs text-[#FC6200]/70 mt-1">projected all-in</div>
                 </div>
                 <div className="text-center bg-emerald-900/30 rounded-xl p-4 border border-emerald-700">
                   <div className="text-xs text-emerald-300 mb-1">Rate Reduction</div>
@@ -871,15 +871,15 @@ export default function ROICalculator() {
             </div>
 
             {/* Rev Share */}
-            <div className="bg-gray-800/60 border border-gray-700 rounded-2xl p-5 mb-6">
-              <h3 className="text-sm font-semibold text-indigo-300 uppercase tracking-widest mb-4">Revenue Share / Residual Analysis</h3>
+            <div className="bg-[#003350]/60 border border-[#003350] rounded-2xl p-5 mb-6">
+              <h3 className="text-sm font-semibold text-[#FC6200] uppercase tracking-widest mb-4">Revenue Share / Residual Analysis</h3>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
                 <KPI label="Residual Pool (Est.)" value={fmtDollar(calc.grossResidualPool)} sub="~50bps of total volume" tip={T.residualPool} />
                 <KPI label="Current ISV Share" value={fmtDollar(calc.currentResidual)} sub={`${revenueSharePct}% split`} />
                 <KPI label="Cresora ISV Share" value={fmtDollar(calc.cresoraResidual)} sub={`${cresoraRevSharePct}% split`} accent />
                 <KPI label="Annual Residual Uplift" value={fmtDollar(calc.residualDelta)} sub="additional ISV revenue" accent />
               </div>
-              <div className="text-xs text-gray-400 bg-gray-900/60 rounded-lg p-3 border border-gray-700">
+              <div className="text-xs text-gray-400 bg-[#00273B]/60 rounded-lg p-3 border border-[#003350]">
                 <strong className="text-yellow-400">Contract Note:</strong>{" "}
                 {hasExclusivity === "yes"
                   ? "Exclusivity clause restricts multi-processor routing — a core Cresora value driver for authorization rate lift."
@@ -891,9 +891,9 @@ export default function ROICalculator() {
             </div>
 
             {/* Cost Breakdown */}
-            <div className="bg-gray-800/60 border border-gray-700 rounded-2xl p-5 mb-6">
-              <h3 className="text-sm font-semibold text-indigo-300 uppercase tracking-widest mb-3">Annual Cost Breakdown — Current vs. Cresora</h3>
-              <div className="flex items-center justify-between py-2 border-b border-gray-600 mb-1 text-xs font-semibold text-gray-400">
+            <div className="bg-[#003350]/60 border border-[#003350] rounded-2xl p-5 mb-6">
+              <h3 className="text-sm font-semibold text-[#FC6200] uppercase tracking-widest mb-3">Annual Cost Breakdown — Current vs. Cresora</h3>
+              <div className="flex items-center justify-between py-2 border-b border-[#003350] mb-1 text-xs font-semibold text-gray-400">
                 <span className="w-48">Cost Category</span>
                 <span className="w-28 text-right">Current</span>
                 <span className="w-28 text-right">Cresora</span>
@@ -908,7 +908,7 @@ export default function ROICalculator() {
               <Diff tag="Card" label="Card Returns" current={calc.currentReturnCost} cresora={calc.cresoraReturnCost} tip="Annual card refund/return processing fees." />
               <Diff label="API / Dev Costs" current={calc.currentApiAnnual} cresora={calc.cresoraApiAnnual} tip="API licensing + internal engineering labor." />
               <Diff label="Onboarding Costs" current={calc.currentOnboardAnnual} cresora={calc.cresoraOnboardAnnual} tip="Annual merchant onboarding costs." />
-              <div className="mt-3 pt-3 border-t border-indigo-700 space-y-1">
+              <div className="mt-3 pt-3 border-t border-[#FC6200]/40 space-y-1">
                 {[
                   { label: "Card Auth Rate Lift", val: calc.authLiftRevenue, tip: T.authLift },
                   { label: "Funding Speed Value", val: calc.fundingValue, tip: "Working capital value from faster settlement on combined card + ACH volume." },
@@ -925,35 +925,35 @@ export default function ROICalculator() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-              <div className="bg-gray-800/60 border border-gray-700 rounded-2xl p-5">
-                <h3 className="text-sm font-semibold text-indigo-300 uppercase tracking-widest mb-4">Cost Comparison by Category</h3>
+              <div className="bg-[#003350]/60 border border-[#003350] rounded-2xl p-5">
+                <h3 className="text-sm font-semibold text-[#FC6200] uppercase tracking-widest mb-4">Cost Comparison by Category</h3>
                 <ResponsiveContainer width="100%" height={260}>
                   <BarChart data={savingsBreakdown} margin={{ top: 0, right: 10, left: 10, bottom: 0 }}>
                     <XAxis dataKey="name" tick={{ fontSize: 9, fill: "#9ca3af" }} />
                     <YAxis tickFormatter={(v) => "$" + fmt(v / 1000) + "k"} tick={{ fontSize: 10, fill: "#9ca3af" }} />
-                    <Tooltip formatter={(v) => fmtDollar(v as number)} contentStyle={{ background: "#1f2937", border: "1px solid #374151", borderRadius: "8px" }} />
+                    <Tooltip formatter={(v) => fmtDollar(v as number)} contentStyle={{ background: "#00273B", border: "1px solid #003350", borderRadius: "8px" }} />
                     <Legend wrapperStyle={{ fontSize: "11px" }} />
-                    <Bar dataKey="current" name="Current" fill="#ef4444" radius={[4, 4, 0, 0]} />
-                    <Bar dataKey="cresora" name="Cresora" fill="#6366f1" radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="current" name="Current" fill="#FC6200" radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="cresora" name="Cresora" fill="#68DDDC" radius={[4, 4, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
-              <div className="bg-gray-800/60 border border-gray-700 rounded-2xl p-5">
-                <h3 className="text-sm font-semibold text-indigo-300 uppercase tracking-widest mb-4">Where Savings Come From</h3>
+              <div className="bg-[#003350]/60 border border-[#003350] rounded-2xl p-5">
+                <h3 className="text-sm font-semibold text-[#FC6200] uppercase tracking-widest mb-4">Where Savings Come From</h3>
                 <ResponsiveContainer width="100%" height={260}>
                   <PieChart>
                     <Pie data={pieData} cx="50%" cy="50%" outerRadius={85} dataKey="value"
                       label={({ name, percent }) => `${String(name ?? "").split(" ")[0]} ${((percent ?? 0) * 100).toFixed(0)}%`} labelLine={false} fontSize={9}>
                       {pieData.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
                     </Pie>
-                    <Tooltip formatter={(v) => fmtDollar(v as number)} contentStyle={{ background: "#1f2937", border: "1px solid #374151", borderRadius: "8px" }} />
+                    <Tooltip formatter={(v) => fmtDollar(v as number)} contentStyle={{ background: "#00273B", border: "1px solid #003350", borderRadius: "8px" }} />
                   </PieChart>
                 </ResponsiveContainer>
               </div>
             </div>
 
-            <div className="bg-gradient-to-r from-indigo-950/60 to-gray-900/60 border border-indigo-700/50 rounded-2xl p-5">
-              <h3 className="text-sm font-semibold text-indigo-300 uppercase tracking-widest mb-4">ROI Snapshot</h3>
+            <div className="bg-gradient-to-r from-[#00273B]/60 to-[#003350]/60 border border-[#FC6200]/50 rounded-2xl p-5">
+              <h3 className="text-sm font-semibold text-[#FC6200] uppercase tracking-widest mb-4">ROI Snapshot</h3>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <KPI label="Monthly Savings" value={fmtDollar(calc.totalSavings / 12)} sub="hard cost reduction" />
                 <KPI label="Annual Total ROI" value={fmtDollar(calc.totalWithResidual)} sub="savings + residual uplift" accent />
@@ -967,8 +967,8 @@ export default function ROICalculator() {
         {/* MERCHANT TAB */}
         {tab === "merchant" && (
           <div>
-            <div className="bg-indigo-950/40 border border-indigo-800/50 rounded-xl p-4 mb-6 text-sm text-indigo-200">
-              Single merchant profile: <strong>{fmtDollar(avgMonthlyVol)}/mo card</strong> · <strong>{fmt(avgMonthlyTxn)} card txns/mo</strong> · <strong className="text-teal-300">{fmtDollar(achMonthlyVol)}/mo ACH</strong> · <strong className="text-teal-300">{fmt(achMonthlyTxn)} ACH txns/mo</strong>
+            <div className="bg-[#FC6200]/10 border border-[#FC6200]/30 rounded-xl p-4 mb-6 text-sm text-[#FC6200]/80">
+              Single merchant profile: <strong>{fmtDollar(avgMonthlyVol)}/mo card</strong> · <strong>{fmt(avgMonthlyTxn)} card txns/mo</strong> · <strong className="text-[#68DDDC]">{fmtDollar(achMonthlyVol)}/mo ACH</strong> · <strong className="text-[#68DDDC]">{fmt(achMonthlyTxn)} ACH txns/mo</strong>
             </div>
 
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
@@ -979,19 +979,19 @@ export default function ROICalculator() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-              <div className="bg-gray-800/60 border border-indigo-700/40 rounded-2xl p-5">
+              <div className="bg-[#003350]/60 border border-[#FC6200]/40/40 rounded-2xl p-5">
                 <div className="flex items-center gap-2 mb-3">
-                  <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-indigo-900/60 text-indigo-300 border border-indigo-700">Card</span>
+                  <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-[#FC6200]/20 text-[#FC6200] border border-[#FC6200]/40">Card</span>
                   <h3 className="text-sm font-semibold text-white">Card Processing Fees</h3>
                 </div>
                 <div className="space-y-2 text-sm">
-                  <div className="flex justify-between py-1 border-b border-gray-700/40">
+                  <div className="flex justify-between py-1 border-b border-[#003350]/40">
                     <span className="text-gray-300">Current Annual Card Fees</span>
                     <span className="text-white font-medium">{fmtDollar(merchantCalc.currentCardFees)}</span>
                   </div>
-                  <div className="flex justify-between py-1 border-b border-gray-700/40">
+                  <div className="flex justify-between py-1 border-b border-[#003350]/40">
                     <span className="text-gray-300">Cresora Annual Card Fees</span>
-                    <span className="text-indigo-300 font-medium">{fmtDollar(merchantCalc.cresoraCardFees)}</span>
+                    <span className="text-[#FC6200] font-medium">{fmtDollar(merchantCalc.cresoraCardFees)}</span>
                   </div>
                   <div className="flex justify-between py-1">
                     <span className="text-gray-300">Card Savings</span>
@@ -999,19 +999,19 @@ export default function ROICalculator() {
                   </div>
                 </div>
               </div>
-              <div className="bg-gray-800/60 border border-teal-700/40 rounded-2xl p-5">
+              <div className="bg-[#003350]/60 border border-[#68DDDC]/40/40 rounded-2xl p-5">
                 <div className="flex items-center gap-2 mb-3">
-                  <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-teal-900/60 text-teal-300 border border-teal-700">ACH</span>
+                  <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-[#68DDDC]/20 text-[#68DDDC] border border-[#68DDDC]/40">ACH</span>
                   <h3 className="text-sm font-semibold text-white">ACH Processing Fees</h3>
                 </div>
                 <div className="space-y-2 text-sm">
-                  <div className="flex justify-between py-1 border-b border-gray-700/40">
+                  <div className="flex justify-between py-1 border-b border-[#003350]/40">
                     <span className="text-gray-300">Current Annual ACH Fees</span>
                     <span className="text-white font-medium">{fmtDollar(merchantCalc.currentAchFees)}</span>
                   </div>
-                  <div className="flex justify-between py-1 border-b border-gray-700/40">
+                  <div className="flex justify-between py-1 border-b border-[#003350]/40">
                     <span className="text-gray-300">Cresora Annual ACH Fees</span>
-                    <span className="text-teal-300 font-medium">{fmtDollar(merchantCalc.cresoraAchFees)}</span>
+                    <span className="text-[#68DDDC] font-medium">{fmtDollar(merchantCalc.cresoraAchFees)}</span>
                   </div>
                   <div className="flex justify-between py-1">
                     <span className="text-gray-300">ACH Savings</span>
@@ -1022,16 +1022,16 @@ export default function ROICalculator() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-              <div className="bg-gray-800/60 border border-gray-700 rounded-2xl p-5">
-                <h3 className="text-sm font-semibold text-indigo-300 uppercase tracking-widest mb-4">Total Annual Savings Breakdown</h3>
+              <div className="bg-[#003350]/60 border border-[#003350] rounded-2xl p-5">
+                <h3 className="text-sm font-semibold text-[#FC6200] uppercase tracking-widest mb-4">Total Annual Savings Breakdown</h3>
                 <div className="space-y-3">
                   {[
-                    { label: "Card Fee Reduction", val: merchantCalc.currentCardFees - merchantCalc.cresoraCardFees, color: "text-indigo-300" },
-                    { label: "ACH Fee Reduction", val: merchantCalc.currentAchFees - merchantCalc.cresoraAchFees, color: "text-teal-300" },
+                    { label: "Card Fee Reduction", val: merchantCalc.currentCardFees - merchantCalc.cresoraCardFees, color: "text-[#FC6200]" },
+                    { label: "ACH Fee Reduction", val: merchantCalc.currentAchFees - merchantCalc.cresoraAchFees, color: "text-[#68DDDC]" },
                     { label: "Auth Rate Lift (Card)", val: merchantCalc.authLift, color: "text-blue-400" },
                     { label: "Funding Speed Value", val: merchantCalc.funding, color: "text-yellow-400" },
                   ].map((r, i) => (
-                    <div key={i} className="flex justify-between items-center py-2 border-b border-gray-700/60">
+                    <div key={i} className="flex justify-between items-center py-2 border-b border-[#003350]/60">
                       <span className="text-sm text-gray-300">{r.label}</span>
                       <span className={`text-sm font-semibold ${r.color}`}>{fmtDollar(r.val)}</span>
                     </div>
@@ -1046,8 +1046,8 @@ export default function ROICalculator() {
                   </div>
                 </div>
               </div>
-              <div className="bg-gray-800/60 border border-gray-700 rounded-2xl p-5">
-                <h3 className="text-sm font-semibold text-indigo-300 uppercase tracking-widest mb-4 flex items-center">Blended Effective Rate<InfoTip text={T.effectiveRate} /></h3>
+              <div className="bg-[#003350]/60 border border-[#003350] rounded-2xl p-5">
+                <h3 className="text-sm font-semibold text-[#FC6200] uppercase tracking-widest mb-4 flex items-center">Blended Effective Rate<InfoTip text={T.effectiveRate} /></h3>
                 <div className="flex flex-col gap-4 mt-2">
                   <div>
                     <div className="flex justify-between text-xs text-gray-400 mb-1"><span>Current Rate (Card + ACH)</span><span>{fmtPct(merchantCalc.currentFees / merchantCalc.totalVol)}</span></div>
@@ -1055,7 +1055,7 @@ export default function ROICalculator() {
                   </div>
                   <div>
                     <div className="flex justify-between text-xs text-gray-400 mb-1"><span>Cresora Rate (Card + ACH)</span><span>{fmtPct(merchantCalc.cresoraFees / merchantCalc.totalVol)}</span></div>
-                    <div className="h-3 bg-indigo-900/50 rounded-full"><div className="h-3 bg-indigo-500 rounded-full" style={{ width: `${Math.min(100, merchantCalc.crp * 50)}%` }} /></div>
+                    <div className="h-3 bg-[#FC6200]/20 rounded-full"><div className="h-3 bg-[#FC6200] rounded-full" style={{ width: `${Math.min(100, merchantCalc.crp * 50)}%` }} /></div>
                   </div>
                   <div className="bg-emerald-900/20 border border-emerald-700/40 rounded-lg p-3 text-center mt-2">
                     <div className="text-xs text-emerald-300">Merchant Keeps</div>
@@ -1066,8 +1066,8 @@ export default function ROICalculator() {
               </div>
             </div>
 
-            <div className="bg-gray-800/60 border border-gray-700 rounded-2xl p-5">
-              <h3 className="text-sm font-semibold text-indigo-300 uppercase tracking-widest mb-4 flex items-center">
+            <div className="bg-[#003350]/60 border border-[#003350] rounded-2xl p-5">
+              <h3 className="text-sm font-semibold text-[#FC6200] uppercase tracking-widest mb-4 flex items-center">
                 Portfolio Projection — Savings at Scale <InfoTip text="Cumulative annual savings if per-merchant improvements were applied across different portfolio sizes up to your full count." />
               </h3>
               <ResponsiveContainer width="100%" height={220}>
@@ -1079,7 +1079,7 @@ export default function ROICalculator() {
                 ]} margin={{ top: 0, right: 10, left: 20, bottom: 0 }}>
                   <XAxis dataKey="scale" tick={{ fontSize: 11, fill: "#9ca3af" }} label={{ value: "Merchants", position: "insideBottom", offset: -2, fontSize: 10, fill: "#6b7280" }} />
                   <YAxis tickFormatter={(v) => "$" + fmt(v / 1000) + "k"} tick={{ fontSize: 10, fill: "#9ca3af" }} />
-                  <Tooltip formatter={(v) => fmtDollar(v as number)} contentStyle={{ background: "#1f2937", border: "1px solid #374151", borderRadius: "8px" }} />
+                  <Tooltip formatter={(v) => fmtDollar(v as number)} contentStyle={{ background: "#00273B", border: "1px solid #003350", borderRadius: "8px" }} />
                   <Bar dataKey="savings" name="Annual Savings" fill="#10b981" radius={[6, 6, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
@@ -1128,7 +1128,7 @@ export default function ROICalculator() {
               <Field label="Dev / Maintenance Hours" hint="hrs/month w/ Cresora"><input type="number" className={inp} value={cresoraDevHrs} onChange={(e) => setCresoraDevHrs(+e.target.value)} /></Field>
             </Section>
             <div className="mt-4">
-              <button onClick={() => setTab("summary")} className="bg-indigo-600 hover:bg-indigo-500 text-white font-semibold px-8 py-3 rounded-xl transition-all">
+              <button onClick={() => setTab("summary")} className="bg-[#FC6200] hover:bg-[#FC6200] text-white font-semibold px-8 py-3 rounded-xl transition-all">
                 Update ROI Summary →
               </button>
             </div>

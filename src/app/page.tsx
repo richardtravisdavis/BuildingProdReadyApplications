@@ -6,68 +6,71 @@ export default function Home() {
   return (
     <div className="min-h-screen flex flex-col">
       {/* Nav */}
-      <nav className="border-b">
+      <nav className="bg-[#00273B] border-b border-[#00273B]">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
-          <span className="text-xl font-bold">ROI Calculator</span>
+          <span className="text-xl font-bold text-white">Cresora Commerce</span>
           <div className="flex gap-2">
             <Link href="/login">
-              <Button variant="ghost">Login</Button>
+              <Button variant="ghost" className="text-gray-300 hover:text-white">Login</Button>
             </Link>
             <Link href="/signup">
-              <Button>Sign Up</Button>
+              <Button className="bg-[#FC6200] hover:bg-[#FC6200]/90 text-white">Sign Up</Button>
             </Link>
           </div>
         </div>
       </nav>
 
       {/* Hero */}
-      <section className="flex flex-1 flex-col items-center justify-center px-6 py-24 text-center">
-        <h1 className="max-w-3xl text-4xl font-bold tracking-tight sm:text-5xl">
+      <section className="flex flex-1 flex-col items-center justify-center px-6 py-24 text-center bg-[#00273B]">
+        <p className="text-sm font-semibold text-[#68DDDC] uppercase tracking-widest mb-4">
+          Streamlined at the Speed of AI
+        </p>
+        <h1 className="max-w-3xl text-4xl font-bold tracking-tight sm:text-5xl text-white">
           Stop Overpaying for Merchant Processing
         </h1>
-        <p className="mt-6 max-w-2xl text-lg text-muted-foreground">
+        <p className="mt-6 max-w-2xl text-lg text-gray-300">
           Compare your current merchant processing costs against alternatives and
           discover how much you could save. Our ROI calculator gives you a clear,
           honest picture of your options.
         </p>
         <Link href="/signup" className="mt-8">
-          <Button size="lg" className="text-lg px-8">
+          <Button size="lg" className="text-lg px-8 bg-[#FC6200] hover:bg-[#FC6200]/90 text-white">
             Get Started — It&apos;s Free
           </Button>
         </Link>
       </section>
 
       {/* Feature Cards */}
-      <section className="bg-muted/50 px-6 py-20">
+      <section className="bg-[#003350] px-6 py-20">
         <div className="mx-auto grid max-w-6xl gap-8 md:grid-cols-3">
-          <Card>
+          <Card className="bg-[#00273B] border-[#00273B]/60">
             <CardHeader>
-              <CardTitle>Compare Rates</CardTitle>
+              <CardTitle className="text-[#FC6200]">Compare Rates</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-muted-foreground">
+              <p className="text-gray-300">
                 See how your current processing rates stack up against industry
                 benchmarks and competing providers.
               </p>
             </CardContent>
           </Card>
-          <Card>
+          <Card className="bg-[#00273B] border-[#00273B]/60">
             <CardHeader>
-              <CardTitle>See True Costs</CardTitle>
+              <CardTitle className="text-[#68DDDC]">See True Costs</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-muted-foreground">
+              <p className="text-gray-300">
                 Uncover hidden fees and understand the total cost of your
                 merchant processing — not just the headline rate.
               </p>
             </CardContent>
           </Card>
-          <Card>
+          <Card className="bg-[#00273B] border-[#00273B]/60">
             <CardHeader>
-              <CardTitle>Save Money</CardTitle>
+              <CardTitle className="text-[#FFA622]">Save Money</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-muted-foreground">
+              <p className="text-gray-300">
                 Get a personalized savings estimate and actionable
                 recommendations to reduce your processing costs.
               </p>
@@ -77,8 +80,8 @@ export default function Home() {
       </section>
 
       {/* Footer */}
-      <footer className="border-t px-6 py-8 text-center text-sm text-muted-foreground">
-        &copy; {new Date().getFullYear()} ROI Calculator. All rights reserved.
+      <footer className="bg-[#00273B] border-t border-[#003350] px-6 py-8 text-center text-sm text-gray-400">
+        &copy; {new Date().getFullYear()} Cresora Commerce. All rights reserved.
       </footer>
     </div>
   );

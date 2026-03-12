@@ -11,19 +11,19 @@ export default async function DashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-950">
-      <nav className="bg-gradient-to-r from-indigo-950 via-gray-900 to-gray-950 border-b border-indigo-900/40">
+    <div className="min-h-screen bg-[#00273B]">
+      <nav className="bg-gradient-to-r from-[#00273B] via-[#003350] to-[#00273B] border-b border-[#FC6200]/20">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
           <div>
             <div className="flex items-center gap-3 mb-0.5">
-              <div className="w-2 h-2 rounded-full bg-indigo-400 animate-pulse" />
-              <span className="text-xs font-semibold text-indigo-400 uppercase tracking-widest">
+              <div className="w-2 h-2 rounded-full bg-[#FC6200] animate-pulse" />
+              <span className="text-xs font-semibold text-[#FC6200] uppercase tracking-widest">
                 Pillar 1 · Embedded Commerce & Transaction Orchestration
               </span>
             </div>
             <h1 className="text-xl font-bold text-white">
               Cresora Commerce{" "}
-              <span className="text-indigo-400">ROI Calculator</span>
+              <span className="text-[#68DDDC]">ROI Calculator</span>
             </h1>
             <p className="text-xs text-gray-400 mt-0.5">
               ISV Portfolio Analysis · Card + ACH Multi-Rail Modeling

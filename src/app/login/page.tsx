@@ -69,13 +69,13 @@ export default function LoginPage() {
                 required
               />
             </div>
-            <Button type="submit" className="w-full" disabled={loading}>
+            <Button type="submit" className="w-full bg-[#FC6200] hover:bg-[#FC6200]/90 text-white" disabled={loading}>
               {loading ? "Signing in..." : "Sign in"}
             </Button>
           </form>
           <p className="mt-4 text-center text-sm text-muted-foreground">
             Don&apos;t have an account?{" "}
-            <Link href="/signup" className="text-primary underline">
+            <Link href="/signup" className="text-[#FC6200] underline">
               Sign up
             </Link>
           </p>

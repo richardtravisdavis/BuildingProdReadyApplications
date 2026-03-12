@@ -93,13 +93,13 @@ export default function SignupPage() {
                 minLength={8}
               />
             </div>
-            <Button type="submit" className="w-full" disabled={loading}>
+            <Button type="submit" className="w-full bg-[#FC6200] hover:bg-[#FC6200]/90 text-white" disabled={loading}>
               {loading ? "Creating account..." : "Sign up"}
             </Button>
           </form>
           <p className="mt-4 text-center text-sm text-muted-foreground">
             Already have an account?{" "}
-            <Link href="/login" className="text-primary underline">
+            <Link href="/login" className="text-[#FC6200] underline">
               Sign in
             </Link>
           </p>
