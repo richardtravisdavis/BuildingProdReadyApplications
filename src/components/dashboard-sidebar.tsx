@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import { usePathname } from "next/navigation";
+import Link from "next/link";
 import CresoraLogo from "@/components/cresora-logo";
 
 export default function DashboardSidebar({
@@ -11,6 +13,43 @@ export default function DashboardSidebar({
   signOutAction: () => void;
 }) {
   const [open, setOpen] = useState(false);
+  const pathname = usePathname();
+
+  const navItems = [
+    {
+      href: "/dashboard",
+      label: "ROI Calculator",
+      icon: (
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+          <rect x="2" y="2" width="5.5" height="5.5" rx="1" />
+          <rect x="10.5" y="2" width="5.5" height="5.5" rx="1" />
+          <rect x="2" y="10.5" width="5.5" height="5.5" rx="1" />
+          <rect x="10.5" y="10.5" width="5.5" height="5.5" rx="1" />
+        </svg>
+      ),
+    },
+    {
+      href: "/dashboard/settings",
+      label: "Settings",
+      icon: (
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+          <circle cx="9" cy="9" r="3" />
+          <path d="M9 1.5v1.5M9 13.5v3M1.5 9H3M15 9h1.5M3.7 3.7l1.1 1.1M13.2 13.2l1.1 1.1M14.3 3.7l-1.1 1.1M4.8 13.2l-1.1 1.1" />
+        </svg>
+      ),
+    },
+    {
+      href: "/dashboard/help",
+      label: "Help",
+      icon: (
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+          <circle cx="9" cy="9" r="7.5" />
+          <path d="M6.75 6.75a2.25 2.25 0 0 1 4.35.75c0 1.5-2.1 2.25-2.1 2.25" />
+          <circle cx="9" cy="13" r="0.5" fill="currentColor" />
+        </svg>
+      ),
+    },
+  ];
 
   return (
     <>
@@ -61,39 +100,24 @@ export default function DashboardSidebar({
 
         {/* Nav */}
         <nav className="flex-1 px-3 py-4 space-y-1">
-          <a
-            href="/dashboard"
-            className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium bg-[#FC6200]/10 text-[#FC6200] border-l-2 border-[#FC6200]"
-          >
-            <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-              <rect x="2" y="2" width="5.5" height="5.5" rx="1" />
-              <rect x="10.5" y="2" width="5.5" height="5.5" rx="1" />
-              <rect x="2" y="10.5" width="5.5" height="5.5" rx="1" />
-              <rect x="10.5" y="10.5" width="5.5" height="5.5" rx="1" />
-            </svg>
-            ROI Calculator
-          </a>
-          <a
-            href="#"
-            className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-gray-400 hover:text-white hover:bg-[#003350] transition-colors"
-          >
-            <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-              <circle cx="9" cy="9" r="3" />
-              <path d="M9 1.5v1.5M9 13.5v3M1.5 9H3M15 9h1.5M3.7 3.7l1.1 1.1M13.2 13.2l1.1 1.1M14.3 3.7l-1.1 1.1M4.8 13.2l-1.1 1.1" />
-            </svg>
-            Settings
-          </a>
-          <a
-            href="#"
-            className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-gray-400 hover:text-white hover:bg-[#003350] transition-colors"
-          >
-            <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-              <circle cx="9" cy="9" r="7.5" />
-              <path d="M6.75 6.75a2.25 2.25 0 0 1 4.35.75c0 1.5-2.1 2.25-2.1 2.25" />
-              <circle cx="9" cy="13" r="0.5" fill="currentColor" />
-            </svg>
-            Help
-          </a>
+          {navItems.map((item) => {
+            const isActive = pathname === item.href;
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                onClick={() => setOpen(false)}
+                className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors ${
+                  isActive
+                    ? "font-medium bg-[#FC6200]/10 text-[#FC6200] border-l-2 border-[#FC6200]"
+                    : "text-gray-400 hover:text-white hover:bg-[#003350]"
+                }`}
+              >
+                {item.icon}
+                {item.label}
+              </Link>
+            );
+          })}
         </nav>
 
         {/* User / Sign out */}
