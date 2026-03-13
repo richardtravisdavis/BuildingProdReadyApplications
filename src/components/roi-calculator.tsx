@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useRef, useEffect, type ReactNode } from "react";
+import { useState, useMemo, type ReactNode } from "react";
 import {
   BarChart,
   Bar,
@@ -13,6 +13,7 @@ import {
   Cell,
   Legend,
 } from "recharts";
+import { T } from "./roi-calculator-tooltips";
 
 const COLORS = [
   "#FC6200",
@@ -37,48 +38,17 @@ export const fmtPct = (n: number | null, d = 2) =>
   n == null ? "—" : (n * 100).toFixed(d) + "%";
 
 function InfoTip({ text }: { text: string }) {
-  const [open, setOpen] = useState(false);
-  const [pos, setPos] = useState("right");
-  const ref = useRef<HTMLSpanElement>(null);
-  useEffect(() => {
-    if (!open || !ref.current) return;
-    const rect = ref.current.getBoundingClientRect();
-    setPos(window.innerWidth - rect.right < 260 ? "left" : "right");
-    const close = (e: MouseEvent) => {
-      if (!ref.current?.contains(e.target as Node)) setOpen(false);
-    };
-    document.addEventListener("mousedown", close);
-    return () => document.removeEventListener("mousedown", close);
-  }, [open]);
   return (
     <span
-      ref={ref}
-      className="relative inline-flex items-center ml-1.5 align-middle"
-      style={{ verticalAlign: "middle" }}
+      title={text}
+      className="inline-flex items-center ml-1.5 align-middle cursor-help"
     >
-      <button
-        onMouseEnter={() => setOpen(true)}
-        onMouseLeave={() => setOpen(false)}
-        onClick={() => setOpen((v) => !v)}
+      <span
         className="w-4 h-4 rounded-full bg-[#003350] hover:bg-[#FC6200] text-white flex items-center justify-center transition-colors flex-shrink-0"
         style={{ fontSize: "10px", lineHeight: 1 }}
-        tabIndex={0}
-        aria-label="More info"
       >
         i
-      </button>
-      {open && (
-        <div
-          className={`absolute z-50 w-60 bg-[#00273B] border border-[#FC6200]/60 rounded-xl shadow-2xl px-3 py-2.5 text-xs text-gray-200 leading-relaxed pointer-events-none
-          ${pos === "right" ? "left-6 top-1/2 -translate-y-1/2" : "right-6 top-1/2 -translate-y-1/2"}`}
-          style={{ minWidth: "220px" }}
-        >
-          <div
-            className={`absolute top-1/2 -translate-y-1/2 w-2 h-2 bg-[#00273B] border-[#FC6200]/60 rotate-45 ${pos === "right" ? "-left-1 border-b border-l" : "-right-1 border-t border-r"}`}
-          />
-          {text}
-        </div>
-      )}
+      </span>
     </span>
   );
 }
@@ -236,103 +206,6 @@ function Diff({
   );
 }
 
-const T = {
-  merchants:
-    "The total number of merchants currently processing under your ISV platform. This is the base multiplier for all portfolio-level cost and savings calculations.",
-  avgVol:
-    "The average card payment volume each merchant processes per month. This drives your interchange and markup costs.",
-  avgTxn:
-    "How many individual card transactions the average merchant runs per month. Higher counts amplify per-transaction fee impact.",
-  achVol:
-    "Average monthly ACH (bank-to-bank) transfer volume per merchant. ACH is priced very differently from cards — typically a flat per-transaction fee rather than a percentage — making it highly cost-effective for large ticket sizes like B2B invoices, rent, insurance, or utilities.",
-  achTxn:
-    "Average number of ACH transactions per merchant per month. Unlike cards, ACH costs are dominated by per-item fees, not volume percentage — so transaction count is the key cost driver.",
-  achFee:
-    "The flat fee your current processor charges per ACH debit or credit transaction. Industry range is $0.20–$1.00 per item. This applies to every transaction regardless of dollar amount.",
-  achReturn:
-    "The percentage of ACH transactions that are returned (NSF, invalid account, unauthorized, etc.). Industry average is 1–3%. ACH returns are more expensive to handle than card declines because they involve manual intervention and a separate return fee.",
-  achReturnFee:
-    "The fee charged per ACH return event. Typically $2–$5 per return from your processor, plus potential fees passed on to the merchant. High return rates in ACH can quickly erode the cost advantage of ACH over cards.",
-  avgTicket:
-    "The average dollar value of a single card transaction. Affects auth rate loss calculations, chargeback exposure, and per-item fee weight.",
-  cpPct:
-    "Card Present (CP) means physically swiped/dipped/tapped — lower interchange. Card Not Present (CNP) is e-commerce or keyed — higher interchange due to fraud risk.",
-  authRate:
-    "% of card transactions successfully approved. A 92% rate means 8% of attempts are declined — lost revenue. Cresora's multi-rail routing retries declines through alternate processors to recover 1–3% of those.",
-  pricingModel:
-    "How your processor charges for card transactions. IC+ is most transparent. Flat-Rate is simple but costly for low-interchange cards. Tiered hides true costs in qualification buckets.",
-  markup:
-    "Basis points above actual interchange (set by Visa/Mastercard). Reducing this is the fastest lever on effective rate.",
-  perTxn:
-    "Flat fee per card transaction regardless of amount. At scale across thousands of merchants, this becomes a significant line item.",
-  flatRate:
-    "All-inclusive rate on every card transaction. Merchants with debit-heavy or CP-heavy volume are likely overpaying.",
-  tieredQual:
-    "Lowest tier — standard consumer cards swiped in person. Processors design tiers so fewer transactions qualify here than advertised.",
-  tieredMidQual:
-    "Middle tier — rewards cards, business cards, or manually keyed entries. Usually 0.5–1% above qualified.",
-  tieredNonQual:
-    "Highest tier — premium rewards, corporate cards, or unqualified transactions. Can be 1.5–2% above qualified.",
-  gateway:
-    "Monthly gateway fee per merchant to route/process card transactions. Cresora's embedded orchestration eliminates the need for a standalone gateway.",
-  pci:
-    "Annual PCI DSS compliance cost per merchant. Cresora's hosted tokenization reduces merchant PCI scope by ~60%.",
-  api:
-    "Monthly spend on third-party API integrations and middleware for your current processor(s).",
-  devHrs:
-    "Internal engineering hours monthly to maintain payment integrations, handle processor updates, and manage downtime.",
-  laborRate:
-    "Internal cost per hour for tech/ops staff — used to value dev hours and chargeback labor.",
-  cbRate:
-    "% of card transactions resulting in a chargeback. Above 1% triggers Visa/Mastercard monitoring programs.",
-  cbFee:
-    "Processor fee per chargeback regardless of win/loss. Typically $15–$35.",
-  cbLabor:
-    "Internal hours spent per dispute on evidence, documentation, and response. Often 1.5–3 hrs each.",
-  returnRate:
-    "% of card transactions refunded/returned. Fees are rarely refunded by processors.",
-  returnFee:
-    "Some processors charge a small fee to process refunds. Common in certain verticals.",
-  fundingDays:
-    "Business days for settled funds to reach merchant bank accounts. Slower funding = more working capital tied up.",
-  costOfCapital:
-    "Annualized cost of money. 1 extra day of float on $85K/mo volume costs ~$14/day per merchant at 6% cost of capital.",
-  onboard:
-    "Total cost per new merchant to underwrite, verify, and board — KYB, risk review, setup, and support.",
-  churn:
-    "Annual % of merchants who leave. Each lost merchant represents forfeited LTV.",
-  ltv:
-    "Total net revenue generated by an average merchant over their full relationship with your platform.",
-  revShare:
-    "% of net residuals returned to the ISV. Common splits: 20–50%. Cresora's model increases this as a partnership lever.",
-  contractLen:
-    "Length of your current processor agreement. Many auto-renew with 30–90 day cancellation windows.",
-  termFee:
-    "Exit fee if you leave before contract end. Often a flat amount or remaining monthly minimums.",
-  exclusivity:
-    "Whether your contract forces all volume through a single processor. Exclusivity blocks multi-rail routing — one of Cresora's core authorization rate levers.",
-  authLift:
-    "Revenue recovered from declined card transactions via Cresora's intelligent multi-processor routing. If one processor declines, Cresora retries through an alternate rail automatically.",
-  cbReduction:
-    "Estimated reduction in chargeback frequency via Cresora's fraud scoring, velocity checks, and 3DS2 orchestration.",
-  cresoraFunding:
-    "Cresora targets next-business-day funding vs. the 2–3 day industry norm. Faster funding improves merchant cash flow.",
-  churnReduction:
-    "Estimated merchant retention improvement from better payment performance, higher approval rates, and faster funding.",
-  cresoraRevShare:
-    "Rev share % Cresora offers ISV partners. Enter from your Cresora proposal or use the default estimate.",
-  effectiveRate:
-    "The true all-in cost of payment acceptance as a % of total volume — including all fees, PCI, chargebacks, and gateway costs. The single most honest comparison metric.",
-  residualPool:
-    "Estimated at ~50bps of total portfolio volume — a conservative estimate of net revenue above interchange and costs available for ISV rev share.",
-  cresoraAchFee:
-    "Cresora's ACH per-transaction fee. Typically $0.10–$0.25 vs. $0.25–$0.75 at traditional processors — a significant margin improvement for ACH-heavy merchants.",
-  totalVolume:
-    "Combined card + ACH monthly volume across your entire portfolio. The blended effective rate is calculated across this total.",
-  totalTxn:
-    "Combined card + ACH transaction count. Used to weight the blended cost-per-transaction across both payment rails.",
-};
-
 export default function ROICalculator() {
   const [tab, setTab] = useState("isv");
 
@@ -373,7 +246,6 @@ export default function ROICalculator() {
   const [costOfCapital, setCostOfCapital] = useState(6);
   const [apiCostMonthly, setApiCostMonthly] = useState(1500);
   const [devHrsMonthly, setDevHrsMonthly] = useState(20);
-  const [contractLength, setContractLength] = useState(3);
   const [termFee, setTermFee] = useState(5000);
   const [hasExclusivity, setHasExclusivity] = useState("yes");
   const [revenueSharePct, setRevenueSharePct] = useState(25);
@@ -779,7 +651,6 @@ export default function ROICalculator() {
 
             <Section title="Revenue Share & Contract Terms">
               <Field label="Current Rev Share to ISV" hint="% of residuals" tip={T.revShare}><input type="number" className={inp} value={revenueSharePct} onChange={(e) => setRevenueSharePct(+e.target.value)} min={0} max={100} /></Field>
-              <Field label="Contract Length" hint="years" tip={T.contractLen}><input type="number" className={inp} value={contractLength} onChange={(e) => setContractLength(+e.target.value)} min={1} max={10} /></Field>
               <Field label="Early Termination Fee" hint="$" tip={T.termFee}><input type="number" className={inp} value={termFee} onChange={(e) => setTermFee(+e.target.value)} /></Field>
               <Field label="Exclusivity Clause" tip={T.exclusivity}>
                 <select className={inp} value={hasExclusivity} onChange={(e) => setHasExclusivity(e.target.value)}>
