@@ -7,7 +7,7 @@ export async function sendPasswordResetEmail(email: string, token: string) {
   const resetUrl = `${env.APP_URL}/reset-password?token=${token}`;
 
   await resend.emails.send({
-    from: "Cresora <noreply@cresoracommerce.com>",
+    from: env.EMAIL_FROM,
     to: email,
     subject: "Reset your password",
     html: `
