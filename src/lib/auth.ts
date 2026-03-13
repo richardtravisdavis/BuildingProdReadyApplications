@@ -22,15 +22,27 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 
         if (!email || !password) return null;
 
-        const [user] = await db
-          .select()
-          .from(users)
-          .where(eq(users.email, email))
-          .limit(1);
+        let user;
+        try {
+          const rows = await db
+            .select()
+            .from(users)
+            .where(eq(users.email, email))
+            .limit(1);
+          user = rows[0];
+          console.log("[auth] user found:", !!user, "email:", email);
+        } catch (err) {
+          console.error("[auth] DB error:", err);
+          return null;
+        }
 
-        if (!user || !user.password) return null;
+        if (!user || !user.password) {
+          console.log("[auth] no user or no password hash");
+          return null;
+        }
 
         const isValid = await bcrypt.compare(password, user.password);
+        console.log("[auth] bcrypt compare result:", isValid);
         if (!isValid) return null;
 
         return {
