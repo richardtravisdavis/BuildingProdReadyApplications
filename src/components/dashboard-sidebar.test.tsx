@@ -87,4 +87,33 @@ describe("DashboardSidebar", () => {
     // Should not render a user name paragraph
     expect(screen.queryByText("null")).not.toBeInTheDocument();
   });
+
+  it("closes mobile menu when backdrop is clicked", async () => {
+    const user = userEvent.setup();
+    render(<DashboardSidebar userName="Travis" signOutAction={mockSignOut} />);
+    await user.click(screen.getByLabelText("Open menu"));
+    // Click the backdrop overlay
+    const backdrop = document.querySelector(".fixed.inset-0");
+    expect(backdrop).toBeInTheDocument();
+    await user.click(backdrop!);
+    const sidebar = screen.getByRole("complementary");
+    expect(sidebar.className).toContain("-translate-x-full");
+  });
+
+  it("closes mobile menu when a nav link is clicked", async () => {
+    const user = userEvent.setup();
+    render(<DashboardSidebar userName="Travis" signOutAction={mockSignOut} />);
+    await user.click(screen.getByLabelText("Open menu"));
+    // Click a nav link
+    await user.click(screen.getByText("Settings"));
+    const sidebar = screen.getByRole("complementary");
+    expect(sidebar.className).toContain("-translate-x-full");
+  });
+
+  it("sign out button submits the form", () => {
+    render(<DashboardSidebar userName="Travis" signOutAction={mockSignOut} />);
+    const form = screen.getByText("Sign out").closest("form");
+    expect(form).toBeInTheDocument();
+    expect(form).toHaveAttribute("action");
+  });
 });

@@ -28,14 +28,27 @@ vi.mock("bcryptjs", () => ({
   },
 }));
 
-// Mock NextAuth to capture the config and extract the authorize function
+// Mock NextAuth to capture the config and extract the authorize function + callbacks
 let capturedAuthorize: (credentials: Record<string, unknown>) => Promise<unknown>;
+let capturedCallbacks: {
+  jwt: (params: { token: Record<string, unknown>; user?: { id?: string } }) => Promise<Record<string, unknown>>;
+  session: (params: { session: { user: Record<string, unknown> }; token: Record<string, unknown> }) => Promise<{ user: Record<string, unknown> }>;
+};
 
 vi.mock("next-auth", () => ({
-  default: vi.fn((config: { providers: Array<{ options?: { authorize?: (creds: Record<string, unknown>) => Promise<unknown> } }> }) => {
+  default: vi.fn((config: {
+    providers: Array<{ options?: { authorize?: (creds: Record<string, unknown>) => Promise<unknown> } }>;
+    callbacks?: {
+      jwt: (params: { token: Record<string, unknown>; user?: { id?: string } }) => Promise<Record<string, unknown>>;
+      session: (params: { session: { user: Record<string, unknown> }; token: Record<string, unknown> }) => Promise<{ user: Record<string, unknown> }>;
+    };
+  }) => {
     const credProvider = config.providers[0];
     if (credProvider?.options?.authorize) {
       capturedAuthorize = credProvider.options.authorize;
+    }
+    if (config.callbacks) {
+      capturedCallbacks = config.callbacks;
     }
     return {
       handlers: {},
@@ -113,5 +126,36 @@ describe("authorize (credentials provider)", () => {
       name: "Travis",
       email: "travis@test.com",
     });
+  });
+});
+
+describe("jwt callback", () => {
+  it("adds user id to token on initial sign-in", async () => {
+    const token = { sub: "test" };
+    const user = { id: "uuid-123" };
+    const result = await capturedCallbacks.jwt({ token, user });
+    expect(result.id).toBe("uuid-123");
+  });
+
+  it("returns token unchanged on subsequent requests (no user)", async () => {
+    const token = { sub: "test", id: "uuid-123" };
+    const result = await capturedCallbacks.jwt({ token });
+    expect(result).toEqual(token);
+  });
+});
+
+describe("session callback", () => {
+  it("adds token id to session user", async () => {
+    const session = { user: { name: "Travis", email: "t@t.com" } };
+    const token = { id: "uuid-123" };
+    const result = await capturedCallbacks.session({ session, token });
+    expect(result.user.id).toBe("uuid-123");
+  });
+
+  it("returns session unchanged when token has no id", async () => {
+    const session = { user: { name: "Travis", email: "t@t.com" } };
+    const token = {};
+    const result = await capturedCallbacks.session({ session, token });
+    expect(result.user.id).toBeUndefined();
   });
 });
