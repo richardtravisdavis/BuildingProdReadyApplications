@@ -3,6 +3,32 @@ import { env } from "./env";
 
 const resend = new Resend(env.RESEND_API_KEY);
 
+export async function sendVerificationEmail(email: string, token: string) {
+  const verifyUrl = `${env.APP_URL}/verify-email/confirm?token=${token}`;
+
+  await resend.emails.send({
+    from: env.EMAIL_FROM,
+    to: email,
+    subject: "Verify your email address",
+    html: `
+      <div style="font-family: sans-serif; max-width: 480px; margin: 0 auto; padding: 32px;">
+        <h1 style="color: #003350; font-size: 24px; margin-bottom: 16px;">Verify your email address</h1>
+        <p style="color: #4a5568; font-size: 16px; line-height: 1.5;">
+          Thanks for signing up! Please verify your email address by clicking the button below.
+        </p>
+        <div style="text-align: center; margin: 32px 0;">
+          <a href="${verifyUrl}" style="background-color: #FC6200; color: white; padding: 12px 32px; border-radius: 6px; text-decoration: none; font-weight: bold; display: inline-block;">
+            Verify email
+          </a>
+        </div>
+        <p style="color: #718096; font-size: 14px; line-height: 1.5;">
+          This link will expire in 24 hours. If you didn&apos;t create an account, you can safely ignore this email.
+        </p>
+      </div>
+    `,
+  });
+}
+
 export async function sendPasswordResetEmail(email: string, token: string) {
   const resetUrl = `${env.APP_URL}/reset-password?token=${token}`;
 

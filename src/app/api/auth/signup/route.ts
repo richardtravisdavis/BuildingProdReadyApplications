@@ -1,10 +1,12 @@
 import { NextResponse } from "next/server";
+import crypto from "crypto";
 import { db } from "@/db";
-import { users } from "@/db/schema";
+import { users, emailVerificationTokens } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import bcrypt from "bcryptjs";
 import { signupSchema } from "@/lib/validations";
 import { rateLimit } from "@/lib/rate-limit";
+import { sendVerificationEmail } from "@/lib/email";
 
 export async function POST(request: Request) {
   try {
@@ -42,11 +44,22 @@ export async function POST(request: Request) {
 
     const hashedPassword = await bcrypt.hash(password, 12);
 
-    await db.insert(users).values({
+    const [newUser] = await db.insert(users).values({
       name: name || null,
       email,
       password: hashedPassword,
+    }).returning({ id: users.id });
+
+    const rawToken = crypto.randomBytes(32).toString("hex");
+    const hashedToken = crypto.createHash("sha256").update(rawToken).digest("hex");
+
+    await db.insert(emailVerificationTokens).values({
+      userId: newUser.id,
+      token: hashedToken,
+      expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 hours
     });
+
+    await sendVerificationEmail(email, rawToken);
 
     return NextResponse.json(
       { message: "Account created successfully" },
