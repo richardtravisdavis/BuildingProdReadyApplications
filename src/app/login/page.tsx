@@ -90,6 +90,11 @@ export default function LoginPage() {
             className="bg-[#00273B] border-[#00273B]/60 text-white placeholder:text-gray-500 focus:border-[#FC6200] focus:ring-[#FC6200]"
           />
         </div>
+        <div className="flex justify-end">
+          <Link href="/forgot-password" className="text-sm text-[#FC6200] hover:text-[#FC6200]/80 underline">
+            Forgot password?
+          </Link>
+        </div>
         <Button type="submit" className="w-full bg-[#FC6200] hover:bg-[#FC6200]/90 text-white h-11 text-base" disabled={loading}>
           {loading ? "Signing in..." : "Sign in"}
         </Button>

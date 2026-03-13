@@ -12,6 +12,8 @@ jobs:
     env:
       DATABASE_URL: postgresql://user:pass@localhost/fake?sslmode=require
       AUTH_SECRET: ci-dummy-secret-not-real
+      RESEND_API_KEY: re_ci_dummy_key_not_real
+      APP_URL: http://localhost:3000
 
     steps:
       - uses: actions/checkout@v4
