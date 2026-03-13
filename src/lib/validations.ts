@@ -17,6 +17,18 @@ export const profileSchema = z.object({
     .max(100, "Name must be less than 100 characters"),
 });
 
+export const forgotPasswordSchema = z.object({
+  email: z.string().email("Invalid email address").max(255),
+});
+
+export const resetPasswordSchema = z.object({
+  token: z.string().min(1, "Token is required"),
+  password: z
+    .string()
+    .min(8, "Password must be at least 8 characters")
+    .max(128, "Password must be less than 128 characters"),
+});
+
 export const passwordSchema = z.object({
   currentPassword: z.string().min(1, "Current password is required"),
   newPassword: z
