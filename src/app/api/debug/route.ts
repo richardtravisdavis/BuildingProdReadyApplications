@@ -1,27 +1,33 @@
 import { NextResponse } from "next/server";
-import { neon } from "@neondatabase/serverless";
+import { db } from "@/db";
+import { users } from "@/db/schema";
+import { eq } from "drizzle-orm";
+import bcrypt from "bcryptjs";
 
 export async function GET() {
-  try {
-    const sql = neon(process.env.DATABASE_URL!);
-    const rows = await sql`SELECT id, email, length(password) as pw_len FROM users WHERE email = 'richardtravisdavis@gmail.com' LIMIT 1`;
+  const results: Record<string, unknown> = {
+    dbUrlEnd: process.env.DATABASE_URL?.split("?")[1] ?? "no_params",
+    hasAuthSecret: !!process.env.AUTH_SECRET,
+    hasTrustHost: !!process.env.AUTH_TRUST_HOST,
+  };
 
-    return NextResponse.json({
-      status: "ok",
-      rows,
-      hasAuthSecret: !!process.env.AUTH_SECRET,
-      authSecretLength: process.env.AUTH_SECRET?.length ?? 0,
-      hasTrustHost: !!process.env.AUTH_TRUST_HOST,
-      dbUrlEnd: process.env.DATABASE_URL?.split("?")[1] ?? "no_params",
-    });
+  try {
+    const rows = await db
+      .select()
+      .from(users)
+      .where(eq(users.email, "richardtravisdavis@gmail.com"))
+      .limit(1);
+
+    const user = rows[0];
+    results.userFound = !!user;
+
+    if (user?.password) {
+      results.bcryptValid = await bcrypt.compare("Cresora2026!", user.password);
+      results.hashPrefix = user.password.substring(0, 7);
+    }
   } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : String(err);
-    const cause = (err as { cause?: unknown })?.cause;
-    return NextResponse.json({
-      status: "error",
-      error: message,
-      cause: cause ? String(cause) : undefined,
-      dbUrlEnd: process.env.DATABASE_URL?.split("?")[1] ?? "no_params",
-    }, { status: 500 });
+    results.dbError = err instanceof Error ? err.message : String(err);
   }
+
+  return NextResponse.json(results);
 }
