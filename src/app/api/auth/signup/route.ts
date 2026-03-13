@@ -3,19 +3,30 @@ import { db } from "@/db";
 import { users } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import bcrypt from "bcryptjs";
+import { signupSchema } from "@/lib/validations";
+import { rateLimit } from "@/lib/rate-limit";
 
 export async function POST(request: Request) {
   try {
-    const { name, email, password } = await request.json();
-
-    if (!email || !password) {
+    const ip = request.headers.get("x-forwarded-for") ?? "unknown";
+    const { success } = rateLimit(`signup:${ip}`, { maxRequests: 5, windowMs: 60_000 });
+    if (!success) {
       return NextResponse.json(
-        { error: "Email and password are required" },
-        { status: 400 }
+        { error: "Too many requests. Please try again later." },
+        { status: 429 }
       );
     }
 
-    // Check if user already exists
+    const body = await request.json();
+    const parsed = signupSchema.safeParse(body);
+
+    if (!parsed.success) {
+      const firstError = parsed.error.issues[0]?.message || "Invalid input";
+      return NextResponse.json({ error: firstError }, { status: 400 });
+    }
+
+    const { name, email, password } = parsed.data;
+
     const [existingUser] = await db
       .select()
       .from(users)

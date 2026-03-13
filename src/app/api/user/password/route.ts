@@ -4,6 +4,8 @@ import { db } from "@/db";
 import { users } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import bcrypt from "bcryptjs";
+import { passwordSchema } from "@/lib/validations";
+import { rateLimit } from "@/lib/rate-limit";
 
 export async function PATCH(request: Request) {
   try {
@@ -12,21 +14,23 @@ export async function PATCH(request: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { currentPassword, newPassword } = await request.json();
-
-    if (!currentPassword || !newPassword) {
+    const { success } = rateLimit(`password:${session.user.id}`, { maxRequests: 3, windowMs: 60_000 });
+    if (!success) {
       return NextResponse.json(
-        { error: "Current and new passwords are required" },
-        { status: 400 }
+        { error: "Too many requests. Please try again later." },
+        { status: 429 }
       );
     }
 
-    if (newPassword.length < 8) {
-      return NextResponse.json(
-        { error: "New password must be at least 8 characters" },
-        { status: 400 }
-      );
+    const body = await request.json();
+    const parsed = passwordSchema.safeParse(body);
+
+    if (!parsed.success) {
+      const firstError = parsed.error.issues[0]?.message || "Invalid input";
+      return NextResponse.json({ error: firstError }, { status: 400 });
     }
+
+    const { currentPassword, newPassword } = parsed.data;
 
     const [user] = await db
       .select()

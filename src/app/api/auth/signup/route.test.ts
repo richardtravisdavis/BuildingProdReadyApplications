@@ -1,6 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
 // Mock dependencies before importing the module
+vi.mock("@/lib/rate-limit", () => ({
+  rateLimit: () => ({ success: true, remaining: 10 }),
+}));
+
 vi.mock("@/db", () => ({
   db: {
     select: vi.fn(),
@@ -54,14 +58,28 @@ describe("POST /api/auth/signup", () => {
     const res = await POST(makeRequest({ password: "12345678" }));
     expect(res.status).toBe(400);
     const data = await res.json();
-    expect(data.error).toBe("Email and password are required");
+    expect(data.error).toBeTruthy();
   });
 
   it("returns 400 if password is missing", async () => {
     const res = await POST(makeRequest({ email: "test@example.com" }));
     expect(res.status).toBe(400);
     const data = await res.json();
-    expect(data.error).toBe("Email and password are required");
+    expect(data.error).toBeTruthy();
+  });
+
+  it("returns 400 if email is invalid format", async () => {
+    const res = await POST(makeRequest({ email: "not-an-email", password: "12345678" }));
+    expect(res.status).toBe(400);
+    const data = await res.json();
+    expect(data.error).toBe("Invalid email address");
+  });
+
+  it("returns 400 if password is too short", async () => {
+    const res = await POST(makeRequest({ email: "test@example.com", password: "short" }));
+    expect(res.status).toBe(400);
+    const data = await res.json();
+    expect(data.error).toBe("Password must be at least 8 characters");
   });
 
   it("returns 409 if user already exists", async () => {
