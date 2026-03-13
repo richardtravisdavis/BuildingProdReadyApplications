@@ -14,4 +14,5 @@ export const env = {
   AUTH_SECRET: requireEnv("AUTH_SECRET"),
   RESEND_API_KEY: requireEnv("RESEND_API_KEY"),
   APP_URL: requireEnv("APP_URL"),
+  EMAIL_FROM: requireEnv("EMAIL_FROM"),
 };

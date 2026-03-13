@@ -14,6 +14,7 @@ jobs:
       AUTH_SECRET: ci-dummy-secret-not-real
       RESEND_API_KEY: re_ci_dummy_key_not_real
       APP_URL: http://localhost:3000
+      EMAIL_FROM: onboarding@resend.dev
 
     steps:
       - uses: actions/checkout@v4
