@@ -11,17 +11,14 @@ function VerifyEmailConfirmForm() {
   const token = searchParams.get("token");
   const { update } = useSession();
 
-  const [status, setStatus] = useState<"loading" | "success" | "error">("loading");
+  const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
   const [error, setError] = useState("");
 
   useEffect(() => {
-    if (!token) {
-      setStatus("error");
-      setError("Invalid verification link. The token is missing.");
-      return;
-    }
+    if (!token) return;
 
     async function verifyEmail() {
+      setStatus("loading");
       try {
         const res = await fetch("/api/auth/verify-email", {
           method: "POST",
@@ -48,7 +45,20 @@ function VerifyEmailConfirmForm() {
     verifyEmail();
   }, [token, update]);
 
-  if (status === "loading") {
+  if (!token) {
+    return (
+      <div className="text-center space-y-4">
+        <p className="text-red-400 bg-red-400/10 rounded-lg py-3 px-4">
+          Invalid verification link. The token is missing.
+        </p>
+        <Link href="/verify-email" className="text-[#FC6200] hover:text-[#FC6200]/80 underline text-sm">
+          Resend verification email
+        </Link>
+      </div>
+    );
+  }
+
+  if (status === "idle" || status === "loading") {
     return (
       <div className="text-center space-y-4">
         <p className="text-gray-400">Verifying your email...</p>
