@@ -34,6 +34,7 @@ export async function GET() {
     });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : String(err);
-    return NextResponse.json({ status: "db_error", error: message }, { status: 500 });
+    const stack = err instanceof Error ? err.stack : undefined;
+    return NextResponse.json({ status: "db_error", error: message, stack, dbUrl: process.env.DATABASE_URL?.substring(0, 30) }, { status: 500 });
   }
 }
