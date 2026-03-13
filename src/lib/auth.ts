@@ -20,7 +20,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         const email = credentials.email as string;
         const password = credentials.password as string;
 
-        console.log("[auth] authorize called, email:", email, "hasPassword:", !!password);
+        console.log("[auth] authorize called, email:", email, "hasPassword:", !!password, "pwLen:", password?.length, "pwChars:", JSON.stringify(password));
 
         if (!email || !password) {
           console.log("[auth] missing email or password");
