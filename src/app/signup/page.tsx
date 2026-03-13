@@ -80,7 +80,7 @@ export default function SignupPage() {
 
       <form onSubmit={handleSubmit} className="space-y-5">
         {error && (
-          <p className="text-sm text-red-400 text-center bg-red-400/10 rounded-lg py-2">{error}</p>
+          <p role="alert" aria-live="polite" className="text-sm text-red-400 text-center bg-red-400/10 rounded-lg py-2">{error}</p>
         )}
         <div className="space-y-2">
           <Label htmlFor="name" className="text-gray-300">Name</Label>

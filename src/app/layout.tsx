@@ -8,8 +8,29 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Cresora Commerce — ROI Calculator",
-  description: "Compare merchant processing costs and discover how much you could save with the Cresora ROI calculator.",
+  title: {
+    default: "Cresora Commerce — ROI Calculator",
+    template: "%s | Cresora Commerce",
+  },
+  description:
+    "Compare merchant processing costs and discover how much you could save with the Cresora ROI calculator.",
+  metadataBase: new URL(process.env.AUTH_URL || "http://localhost:3000"),
+  openGraph: {
+    title: "Cresora Commerce — ROI Calculator",
+    description:
+      "Stop overpaying for merchant processing. Compare costs and see your savings instantly.",
+    siteName: "Cresora Commerce",
+    type: "website",
+  },
+  twitter: {
+    card: "summary",
+    title: "Cresora Commerce — ROI Calculator",
+    description:
+      "Stop overpaying for merchant processing. Compare costs and see your savings instantly.",
+  },
+  other: {
+    "theme-color": "#00273B",
+  },
 };
 
 export default function RootLayout({

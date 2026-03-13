@@ -1,5 +1,10 @@
+import type { Metadata } from "next";
 import { auth, signOut } from "@/lib/auth";
 import DashboardSidebar from "@/components/dashboard-sidebar";
+
+export const metadata: Metadata = {
+  title: "Dashboard",
+};
 
 export default async function DashboardLayout({
   children,

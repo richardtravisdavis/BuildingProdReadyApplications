@@ -77,6 +77,8 @@ export default function SettingsPage() {
 
       {message && (
         <div
+          role="alert"
+          aria-live="polite"
           className={`mb-6 px-4 py-3 rounded-lg text-sm ${
             message.type === "success"
               ? "bg-emerald-500/10 border border-emerald-500/30 text-emerald-400"
