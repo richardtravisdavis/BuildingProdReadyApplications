@@ -26,7 +26,9 @@ export async function GET() {
       results.hashPrefix = user.password.substring(0, 7);
     }
   } catch (err: unknown) {
-    results.dbError = err instanceof Error ? err.message : String(err);
+    const e = err instanceof Error ? err : new Error(String(err));
+    results.dbError = e.message;
+    results.dbCause = (e as { cause?: unknown }).cause ? String((e as { cause?: unknown }).cause) : undefined;
   }
 
   return NextResponse.json(results);
