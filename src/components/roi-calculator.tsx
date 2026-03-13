@@ -682,7 +682,7 @@ export default function ROICalculator() {
           <div>
             <Section title="Portfolio Profile" subtitle="Your merchant portfolio overview">
               <Field label="Total Merchants in Portfolio" tip={T.merchants}>
-                <input type="number" className={inp} value={merchants} onChange={(e) => setMerchants(+e.target.value)} />
+                <input type="number" inputMode="numeric" className={inp} value={merchants} onChange={(e) => setMerchants(+e.target.value)} />
               </Field>
             </Section>
 
@@ -695,13 +695,13 @@ export default function ROICalculator() {
 
             <Section title="Card Volume & Mix" badge="Card">
               <Field label="Avg Monthly Card Volume" hint="per merchant" tip={T.avgVol}>
-                <input type="number" className={inp} value={avgMonthlyVol} onChange={(e) => setAvgMonthlyVol(+e.target.value)} />
+                <input type="number" inputMode="decimal" className={inp} value={avgMonthlyVol} onChange={(e) => setAvgMonthlyVol(+e.target.value)} />
               </Field>
               <Field label="Avg Monthly Card Transactions" hint="per merchant" tip={T.avgTxn}>
-                <input type="number" className={inp} value={avgMonthlyTxn} onChange={(e) => setAvgMonthlyTxn(+e.target.value)} />
+                <input type="number" inputMode="numeric" className={inp} value={avgMonthlyTxn} onChange={(e) => setAvgMonthlyTxn(+e.target.value)} />
               </Field>
               <Field label="Average Ticket Amount" hint="$" tip={T.avgTicket}>
-                <input type="number" className={inp} value={avgTicket} onChange={(e) => setAvgTicket(+e.target.value)} />
+                <input type="number" inputMode="numeric" className={inp} value={avgTicket} onChange={(e) => setAvgTicket(+e.target.value)} />
               </Field>
               <Field label="Card Present vs. Not Present Mix" tip={T.cpPct}>
                 <div className="flex items-center gap-2">
@@ -710,25 +710,25 @@ export default function ROICalculator() {
                 </div>
               </Field>
               <Field label="Current Authorization Rate" hint="%" tip={T.authRate}>
-                <input type="number" className={inp} value={authRate} onChange={(e) => setAuthRate(+e.target.value)} min={0} max={100} step={0.1} />
+                <input type="number" inputMode="decimal" className={inp} value={authRate} onChange={(e) => setAuthRate(+e.target.value)} min={0} max={100} step={0.1} />
               </Field>
             </Section>
 
             <Section title="ACH Volume & Pricing" badge="ACH" subtitle="Bank-to-bank transfers — priced per item, not as a % of volume">
               <Field label="Avg Monthly ACH Volume" hint="per merchant" tip={T.achVol}>
-                <input type="number" className={inp} value={achMonthlyVol} onChange={(e) => setAchMonthlyVol(+e.target.value)} />
+                <input type="number" inputMode="decimal" className={inp} value={achMonthlyVol} onChange={(e) => setAchMonthlyVol(+e.target.value)} />
               </Field>
               <Field label="Avg Monthly ACH Transactions" hint="per merchant" tip={T.achTxn}>
-                <input type="number" className={inp} value={achMonthlyTxn} onChange={(e) => setAchMonthlyTxn(+e.target.value)} />
+                <input type="number" inputMode="numeric" className={inp} value={achMonthlyTxn} onChange={(e) => setAchMonthlyTxn(+e.target.value)} />
               </Field>
               <Field label="Current ACH Per-Transaction Fee" hint="$ per item" tip={T.achFee}>
-                <input type="number" className={inp} value={achPerTxnFee} onChange={(e) => setAchPerTxnFee(+e.target.value)} step={0.01} />
+                <input type="number" inputMode="decimal" className={inp} value={achPerTxnFee} onChange={(e) => setAchPerTxnFee(+e.target.value)} step={0.01} />
               </Field>
               <Field label="ACH Return Rate" hint="% of ACH transactions" tip={T.achReturn}>
-                <input type="number" className={inp} value={achReturnRate} onChange={(e) => setAchReturnRate(+e.target.value)} step={0.1} />
+                <input type="number" inputMode="decimal" className={inp} value={achReturnRate} onChange={(e) => setAchReturnRate(+e.target.value)} step={0.1} />
               </Field>
               <Field label="ACH Return Fee" hint="$ per return" tip={T.achReturnFee}>
-                <input type="number" className={inp} value={achReturnFee} onChange={(e) => setAchReturnFee(+e.target.value)} step={0.25} />
+                <input type="number" inputMode="decimal" className={inp} value={achReturnFee} onChange={(e) => setAchReturnFee(+e.target.value)} step={0.25} />
               </Field>
             </Section>
 
@@ -743,59 +743,59 @@ export default function ROICalculator() {
               {pricingModel === "ic_plus" && (
                 <>
                   <Field label="Current Markup over Interchange" hint="%" tip={T.markup}>
-                    <input type="number" className={inp} value={currentMarkupPct} onChange={(e) => setCurrentMarkupPct(+e.target.value)} step={0.01} />
+                    <input type="number" inputMode="decimal" className={inp} value={currentMarkupPct} onChange={(e) => setCurrentMarkupPct(+e.target.value)} step={0.01} />
                   </Field>
                   <Field label="Per-Transaction Fee" hint="$" tip={T.perTxn}>
-                    <input type="number" className={inp} value={currentPerTxn} onChange={(e) => setCurrentPerTxn(+e.target.value)} step={0.01} />
+                    <input type="number" inputMode="decimal" className={inp} value={currentPerTxn} onChange={(e) => setCurrentPerTxn(+e.target.value)} step={0.01} />
                   </Field>
                 </>
               )}
               {pricingModel === "flat" && (
                 <Field label="Flat Rate" hint="%" tip={T.flatRate}>
-                  <input type="number" className={inp} value={flatRate} onChange={(e) => setFlatRate(+e.target.value)} step={0.01} />
+                  <input type="number" inputMode="decimal" className={inp} value={flatRate} onChange={(e) => setFlatRate(+e.target.value)} step={0.01} />
                 </Field>
               )}
               {pricingModel === "tiered" && (
                 <>
-                  <Field label="Qualified Rate" hint="%" tip={T.tieredQual}><input type="number" className={inp} value={tieredQual} onChange={(e) => setTieredQual(+e.target.value)} step={0.01} /></Field>
-                  <Field label="Mid-Qualified Rate" hint="%" tip={T.tieredMidQual}><input type="number" className={inp} value={tieredMidQual} onChange={(e) => setTieredMidQual(+e.target.value)} step={0.01} /></Field>
-                  <Field label="Non-Qualified Rate" hint="%" tip={T.tieredNonQual}><input type="number" className={inp} value={tieredNonQual} onChange={(e) => setTieredNonQual(+e.target.value)} step={0.01} /></Field>
-                  <Field label="% of Txns — Qualified"><input type="number" className={inp} value={tieredQualPct} onChange={(e) => setTieredQualPct(+e.target.value)} /></Field>
-                  <Field label="% of Txns — Mid-Qualified"><input type="number" className={inp} value={tieredMidQualPct} onChange={(e) => setTieredMidQualPct(+e.target.value)} /></Field>
+                  <Field label="Qualified Rate" hint="%" tip={T.tieredQual}><input type="number" inputMode="decimal" className={inp} value={tieredQual} onChange={(e) => setTieredQual(+e.target.value)} step={0.01} /></Field>
+                  <Field label="Mid-Qualified Rate" hint="%" tip={T.tieredMidQual}><input type="number" inputMode="decimal" className={inp} value={tieredMidQual} onChange={(e) => setTieredMidQual(+e.target.value)} step={0.01} /></Field>
+                  <Field label="Non-Qualified Rate" hint="%" tip={T.tieredNonQual}><input type="number" inputMode="decimal" className={inp} value={tieredNonQual} onChange={(e) => setTieredNonQual(+e.target.value)} step={0.01} /></Field>
+                  <Field label="% of Txns — Qualified"><input type="number" inputMode="decimal" className={inp} value={tieredQualPct} onChange={(e) => setTieredQualPct(+e.target.value)} /></Field>
+                  <Field label="% of Txns — Mid-Qualified"><input type="number" inputMode="decimal" className={inp} value={tieredMidQualPct} onChange={(e) => setTieredMidQualPct(+e.target.value)} /></Field>
                 </>
               )}
             </Section>
 
             <Section title="Platform & Compliance Costs">
-              <Field label="Monthly Gateway Fee" hint="$ per merchant" tip={T.gateway}><input type="number" className={inp} value={gatewayFeeMonthly} onChange={(e) => setGatewayFeeMonthly(+e.target.value)} /></Field>
-              <Field label="Annual PCI Compliance Fee" hint="$ per merchant" tip={T.pci}><input type="number" className={inp} value={pciFeeAnnual} onChange={(e) => setPciFeeAnnual(+e.target.value)} /></Field>
-              <Field label="API / Integration Cost" hint="$/month total" tip={T.api}><input type="number" className={inp} value={apiCostMonthly} onChange={(e) => setApiCostMonthly(+e.target.value)} /></Field>
-              <Field label="Dev / Maintenance Hours" hint="hrs/month" tip={T.devHrs}><input type="number" className={inp} value={devHrsMonthly} onChange={(e) => setDevHrsMonthly(+e.target.value)} /></Field>
-              <Field label="Internal Labor Rate" hint="$/hr" tip={T.laborRate}><input type="number" className={inp} value={laborRate} onChange={(e) => setLaborRate(+e.target.value)} /></Field>
+              <Field label="Monthly Gateway Fee" hint="$ per merchant" tip={T.gateway}><input type="number" inputMode="numeric" className={inp} value={gatewayFeeMonthly} onChange={(e) => setGatewayFeeMonthly(+e.target.value)} /></Field>
+              <Field label="Annual PCI Compliance Fee" hint="$ per merchant" tip={T.pci}><input type="number" inputMode="numeric" className={inp} value={pciFeeAnnual} onChange={(e) => setPciFeeAnnual(+e.target.value)} /></Field>
+              <Field label="API / Integration Cost" hint="$/month total" tip={T.api}><input type="number" inputMode="numeric" className={inp} value={apiCostMonthly} onChange={(e) => setApiCostMonthly(+e.target.value)} /></Field>
+              <Field label="Dev / Maintenance Hours" hint="hrs/month" tip={T.devHrs}><input type="number" inputMode="numeric" className={inp} value={devHrsMonthly} onChange={(e) => setDevHrsMonthly(+e.target.value)} /></Field>
+              <Field label="Internal Labor Rate" hint="$/hr" tip={T.laborRate}><input type="number" inputMode="numeric" className={inp} value={laborRate} onChange={(e) => setLaborRate(+e.target.value)} /></Field>
             </Section>
 
             <Section title="Card Disputes & Returns" badge="Card" subtitle="Leave defaults if unknown">
-              <Field label="Chargeback Rate" hint="% of card txns" tip={T.cbRate}><input type="number" className={inp} value={cbRate} onChange={(e) => setCbRate(+e.target.value)} step={0.01} /></Field>
-              <Field label="Chargeback Fee" hint="$ per dispute" tip={T.cbFee}><input type="number" className={inp} value={cbFee} onChange={(e) => setCbFee(+e.target.value)} /></Field>
-              <Field label="Labor per Dispute" hint="hours" tip={T.cbLabor}><input type="number" className={inp} value={cbLaborHrs} onChange={(e) => setCbLaborHrs(+e.target.value)} step={0.5} /></Field>
-              <Field label="Card Return / Refund Rate" hint="% of card txns" tip={T.returnRate}><input type="number" className={inp} value={returnRate} onChange={(e) => setReturnRate(+e.target.value)} step={0.1} /></Field>
-              <Field label="Avg Card Return Fee" hint="$" tip={T.returnFee}><input type="number" className={inp} value={avgReturnFee} onChange={(e) => setAvgReturnFee(+e.target.value)} step={0.05} /></Field>
+              <Field label="Chargeback Rate" hint="% of card txns" tip={T.cbRate}><input type="number" inputMode="decimal" className={inp} value={cbRate} onChange={(e) => setCbRate(+e.target.value)} step={0.01} /></Field>
+              <Field label="Chargeback Fee" hint="$ per dispute" tip={T.cbFee}><input type="number" inputMode="numeric" className={inp} value={cbFee} onChange={(e) => setCbFee(+e.target.value)} /></Field>
+              <Field label="Labor per Dispute" hint="hours" tip={T.cbLabor}><input type="number" inputMode="decimal" className={inp} value={cbLaborHrs} onChange={(e) => setCbLaborHrs(+e.target.value)} step={0.5} /></Field>
+              <Field label="Card Return / Refund Rate" hint="% of card txns" tip={T.returnRate}><input type="number" inputMode="decimal" className={inp} value={returnRate} onChange={(e) => setReturnRate(+e.target.value)} step={0.1} /></Field>
+              <Field label="Avg Card Return Fee" hint="$" tip={T.returnFee}><input type="number" inputMode="decimal" className={inp} value={avgReturnFee} onChange={(e) => setAvgReturnFee(+e.target.value)} step={0.05} /></Field>
             </Section>
 
             <Section title="Cash Flow & Funding">
-              <Field label="Current Funding Speed" hint="business days" tip={T.fundingDays}><input type="number" className={inp} value={fundingDays} onChange={(e) => setFundingDays(+e.target.value)} min={1} max={7} /></Field>
-              <Field label="Cost of Capital" hint="% annually" tip={T.costOfCapital}><input type="number" className={inp} value={costOfCapital} onChange={(e) => setCostOfCapital(+e.target.value)} step={0.5} /></Field>
+              <Field label="Current Funding Speed" hint="business days" tip={T.fundingDays}><input type="number" inputMode="decimal" className={inp} value={fundingDays} onChange={(e) => setFundingDays(+e.target.value)} min={1} max={7} /></Field>
+              <Field label="Cost of Capital" hint="% annually" tip={T.costOfCapital}><input type="number" inputMode="decimal" className={inp} value={costOfCapital} onChange={(e) => setCostOfCapital(+e.target.value)} step={0.5} /></Field>
             </Section>
 
             <Section title="Merchant Lifecycle">
-              <Field label="Onboarding Cost per New Merchant" hint="$" tip={T.onboard}><input type="number" className={inp} value={onboardCostPerMerch} onChange={(e) => setOnboardCostPerMerch(+e.target.value)} /></Field>
-              <Field label="Annual Merchant Churn Rate" hint="%" tip={T.churn}><input type="number" className={inp} value={merchantChurnRate} onChange={(e) => setMerchantChurnRate(+e.target.value)} step={0.5} /></Field>
-              <Field label="Average Merchant LTV" hint="$" tip={T.ltv}><input type="number" className={inp} value={avgMerchantLTV} onChange={(e) => setAvgMerchantLTV(+e.target.value)} /></Field>
+              <Field label="Onboarding Cost per New Merchant" hint="$" tip={T.onboard}><input type="number" inputMode="numeric" className={inp} value={onboardCostPerMerch} onChange={(e) => setOnboardCostPerMerch(+e.target.value)} /></Field>
+              <Field label="Annual Merchant Churn Rate" hint="%" tip={T.churn}><input type="number" inputMode="decimal" className={inp} value={merchantChurnRate} onChange={(e) => setMerchantChurnRate(+e.target.value)} step={0.5} /></Field>
+              <Field label="Average Merchant LTV" hint="$" tip={T.ltv}><input type="number" inputMode="numeric" className={inp} value={avgMerchantLTV} onChange={(e) => setAvgMerchantLTV(+e.target.value)} /></Field>
             </Section>
 
             <Section title="Revenue Share & Contract Terms">
-              <Field label="Current Rev Share to ISV" hint="% of residuals" tip={T.revShare}><input type="number" className={inp} value={revenueSharePct} onChange={(e) => setRevenueSharePct(+e.target.value)} min={0} max={100} /></Field>
-              <Field label="Early Termination Fee" hint="$" tip={T.termFee}><input type="number" className={inp} value={termFee} onChange={(e) => setTermFee(+e.target.value)} /></Field>
+              <Field label="Current Rev Share to ISV" hint="% of residuals" tip={T.revShare}><input type="number" inputMode="decimal" className={inp} value={revenueSharePct} onChange={(e) => setRevenueSharePct(+e.target.value)} min={0} max={100} /></Field>
+              <Field label="Early Termination Fee" hint="$" tip={T.termFee}><input type="number" inputMode="numeric" className={inp} value={termFee} onChange={(e) => setTermFee(+e.target.value)} /></Field>
               <Field label="Exclusivity Clause" tip={T.exclusivity}>
                 <select className={inp} value={hasExclusivity} onChange={(e) => setHasExclusivity(e.target.value as "yes" | "partial" | "no")}>
                   <option value="yes">Yes — locked to single processor</option>
@@ -1089,35 +1089,35 @@ export default function ROICalculator() {
             <Section title="Cresora Card Pricing" badge="Card">
               {pricingModel === "ic_plus" && (
                 <>
-                  <Field label="Cresora Markup over IC" hint="%"><input type="number" className={inp} value={cresoraMarkupPct} onChange={(e) => setCresoraMarkupPct(+e.target.value)} step={0.01} /></Field>
-                  <Field label="Cresora Per-Txn Fee" hint="$"><input type="number" className={inp} value={cresoraPerTxn} onChange={(e) => setCresoraPerTxn(+e.target.value)} step={0.01} /></Field>
+                  <Field label="Cresora Markup over IC" hint="%"><input type="number" inputMode="decimal" className={inp} value={cresoraMarkupPct} onChange={(e) => setCresoraMarkupPct(+e.target.value)} step={0.01} /></Field>
+                  <Field label="Cresora Per-Txn Fee" hint="$"><input type="number" inputMode="decimal" className={inp} value={cresoraPerTxn} onChange={(e) => setCresoraPerTxn(+e.target.value)} step={0.01} /></Field>
                 </>
               )}
               {pricingModel === "flat" && (
-                <Field label="Cresora Flat Rate" hint="%"><input type="number" className={inp} value={cresoraFlatRate} onChange={(e) => setCresoraFlatRate(+e.target.value)} step={0.01} /></Field>
+                <Field label="Cresora Flat Rate" hint="%"><input type="number" inputMode="decimal" className={inp} value={cresoraFlatRate} onChange={(e) => setCresoraFlatRate(+e.target.value)} step={0.01} /></Field>
               )}
               {pricingModel === "tiered" && (
-                <Field label="Cresora Markup over IC" hint="% — converts to IC+"><input type="number" className={inp} value={cresoraMarkupPct} onChange={(e) => setCresoraMarkupPct(+e.target.value)} step={0.01} /></Field>
+                <Field label="Cresora Markup over IC" hint="% — converts to IC+"><input type="number" inputMode="decimal" className={inp} value={cresoraMarkupPct} onChange={(e) => setCresoraMarkupPct(+e.target.value)} step={0.01} /></Field>
               )}
             </Section>
             <Section title="Cresora ACH Pricing" badge="ACH">
               <Field label="Cresora ACH Per-Transaction Fee" hint="$ per item" tip={T.cresoraAchFee}>
-                <input type="number" className={inp} value={cresoraAchPerTxn} onChange={(e) => setCresoraAchPerTxn(+e.target.value)} step={0.01} />
+                <input type="number" inputMode="decimal" className={inp} value={cresoraAchPerTxn} onChange={(e) => setCresoraAchPerTxn(+e.target.value)} step={0.01} />
               </Field>
             </Section>
             <Section title="Performance Improvements">
-              <Field label="Card Auth Rate Lift" hint="percentage points" tip={T.authLift}><input type="number" className={inp} value={cresoraAuthRateLift} onChange={(e) => setCresoraAuthRateLift(+e.target.value)} step={0.1} /></Field>
-              <Field label="Chargeback Reduction" hint="%" tip={T.cbReduction}><input type="number" className={inp} value={cresoraCbReduction} onChange={(e) => setCresoraCbReduction(+e.target.value)} /></Field>
-              <Field label="Funding Speed" hint="business days" tip={T.cresoraFunding}><input type="number" className={inp} value={cresoraFundingDays} onChange={(e) => setCresoraFundingDays(+e.target.value)} min={1} max={5} /></Field>
-              <Field label="Merchant Churn Reduction" hint="%" tip={T.churnReduction}><input type="number" className={inp} value={cresoraChurnReduction} onChange={(e) => setCresoraChurnReduction(+e.target.value)} /></Field>
-              <Field label="Onboarding Cost per Merchant" hint="$ with Cresora"><input type="number" className={inp} value={cresoraOnboardCost} onChange={(e) => setCresoraOnboardCost(+e.target.value)} /></Field>
+              <Field label="Card Auth Rate Lift" hint="percentage points" tip={T.authLift}><input type="number" inputMode="decimal" className={inp} value={cresoraAuthRateLift} onChange={(e) => setCresoraAuthRateLift(+e.target.value)} step={0.1} /></Field>
+              <Field label="Chargeback Reduction" hint="%" tip={T.cbReduction}><input type="number" inputMode="decimal" className={inp} value={cresoraCbReduction} onChange={(e) => setCresoraCbReduction(+e.target.value)} /></Field>
+              <Field label="Funding Speed" hint="business days" tip={T.cresoraFunding}><input type="number" inputMode="decimal" className={inp} value={cresoraFundingDays} onChange={(e) => setCresoraFundingDays(+e.target.value)} min={1} max={5} /></Field>
+              <Field label="Merchant Churn Reduction" hint="%" tip={T.churnReduction}><input type="number" inputMode="decimal" className={inp} value={cresoraChurnReduction} onChange={(e) => setCresoraChurnReduction(+e.target.value)} /></Field>
+              <Field label="Onboarding Cost per Merchant" hint="$ with Cresora"><input type="number" inputMode="numeric" className={inp} value={cresoraOnboardCost} onChange={(e) => setCresoraOnboardCost(+e.target.value)} /></Field>
             </Section>
             <Section title="Revenue Share">
-              <Field label="Cresora ISV Rev Share" hint="% to ISV" tip={T.cresoraRevShare}><input type="number" className={inp} value={cresoraRevSharePct} onChange={(e) => setCresoraRevSharePct(+e.target.value)} min={0} max={100} /></Field>
+              <Field label="Cresora ISV Rev Share" hint="% to ISV" tip={T.cresoraRevShare}><input type="number" inputMode="decimal" className={inp} value={cresoraRevSharePct} onChange={(e) => setCresoraRevSharePct(+e.target.value)} min={0} max={100} /></Field>
             </Section>
             <Section title="Tech & Integration">
-              <Field label="Cresora API Cost" hint="$/month"><input type="number" className={inp} value={cresoraApiCost} onChange={(e) => setCresoraApiCost(+e.target.value)} /></Field>
-              <Field label="Dev / Maintenance Hours" hint="hrs/month w/ Cresora"><input type="number" className={inp} value={cresoraDevHrs} onChange={(e) => setCresoraDevHrs(+e.target.value)} /></Field>
+              <Field label="Cresora API Cost" hint="$/month"><input type="number" inputMode="numeric" className={inp} value={cresoraApiCost} onChange={(e) => setCresoraApiCost(+e.target.value)} /></Field>
+              <Field label="Dev / Maintenance Hours" hint="hrs/month w/ Cresora"><input type="number" inputMode="numeric" className={inp} value={cresoraDevHrs} onChange={(e) => setCresoraDevHrs(+e.target.value)} /></Field>
             </Section>
             <div className="mt-4">
               <button onClick={() => setTab("summary")} className="bg-[#FC6200] hover:bg-[#FC6200] text-white font-semibold px-8 py-3 rounded-xl transition-all min-h-[44px]">
