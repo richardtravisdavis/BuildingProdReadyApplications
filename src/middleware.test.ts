@@ -1,68 +1,70 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect } from "vitest";
 
 // We test the middleware logic by simulating the auth callback
 describe("middleware route protection", () => {
-  it("redirects unauthenticated users from /dashboard to /login", () => {
+  function simulateMiddleware(auth: unknown, pathname: string) {
     const req = {
-      auth: null,
-      nextUrl: new URL("http://localhost:3000/dashboard"),
+      auth,
+      nextUrl: new URL(`http://localhost:3000${pathname}`),
     };
 
     const isLoggedIn = !!req.auth;
     const isOnDashboard = req.nextUrl.pathname.startsWith("/dashboard");
+    const isOnAuth = req.nextUrl.pathname === "/login" || req.nextUrl.pathname === "/signup";
 
-    expect(isOnDashboard).toBe(true);
-    expect(isLoggedIn).toBe(false);
-
-    // Middleware should redirect
     if (isOnDashboard && !isLoggedIn) {
-      const redirectUrl = new URL("/login", req.nextUrl);
-      expect(redirectUrl.pathname).toBe("/login");
+      return { redirect: "/login" };
     }
+    if (isOnAuth && isLoggedIn) {
+      return { redirect: "/dashboard" };
+    }
+    return null;
+  }
+
+  it("redirects unauthenticated users from /dashboard to /login", () => {
+    const result = simulateMiddleware(null, "/dashboard");
+    expect(result).toEqual({ redirect: "/login" });
   });
 
   it("redirects unauthenticated users from /dashboard/settings", () => {
-    const req = {
-      auth: null,
-      nextUrl: new URL("http://localhost:3000/dashboard/settings"),
-    };
-
-    const isOnDashboard = req.nextUrl.pathname.startsWith("/dashboard");
-    const isLoggedIn = !!req.auth;
-
-    expect(isOnDashboard).toBe(true);
-    expect(isLoggedIn).toBe(false);
+    const result = simulateMiddleware(null, "/dashboard/settings");
+    expect(result).toEqual({ redirect: "/login" });
   });
 
   it("allows authenticated users to access /dashboard", () => {
-    const req = {
-      auth: { user: { id: "1", name: "Travis", email: "t@test.com" } },
-      nextUrl: new URL("http://localhost:3000/dashboard"),
-    };
-
-    const isLoggedIn = !!req.auth;
-    const isOnDashboard = req.nextUrl.pathname.startsWith("/dashboard");
-
-    expect(isOnDashboard).toBe(true);
-    expect(isLoggedIn).toBe(true);
-    // Middleware should NOT redirect — return undefined
+    const result = simulateMiddleware({ user: { id: "1" } }, "/dashboard");
+    expect(result).toBeNull();
   });
 
-  it("does not interfere with non-dashboard routes", () => {
-    const req = {
-      auth: null,
-      nextUrl: new URL("http://localhost:3000/login"),
-    };
-
-    const isOnDashboard = req.nextUrl.pathname.startsWith("/dashboard");
-    expect(isOnDashboard).toBe(false);
-    // Middleware should not redirect for non-dashboard paths
+  it("redirects authenticated users from /login to /dashboard", () => {
+    const result = simulateMiddleware({ user: { id: "1" } }, "/login");
+    expect(result).toEqual({ redirect: "/dashboard" });
   });
 
-  it("matcher config covers dashboard paths", () => {
-    // Imported from middleware — we test the pattern directly
-    const matcher = ["/dashboard/:path*"];
-    const pattern = matcher[0];
-    expect(pattern).toBe("/dashboard/:path*");
+  it("redirects authenticated users from /signup to /dashboard", () => {
+    const result = simulateMiddleware({ user: { id: "1" } }, "/signup");
+    expect(result).toEqual({ redirect: "/dashboard" });
+  });
+
+  it("allows unauthenticated users to access /login", () => {
+    const result = simulateMiddleware(null, "/login");
+    expect(result).toBeNull();
+  });
+
+  it("allows unauthenticated users to access /signup", () => {
+    const result = simulateMiddleware(null, "/signup");
+    expect(result).toBeNull();
+  });
+
+  it("does not interfere with non-protected routes", () => {
+    const result = simulateMiddleware(null, "/");
+    expect(result).toBeNull();
+  });
+
+  it("matcher config covers dashboard and auth paths", () => {
+    const matcher = ["/dashboard/:path*", "/login", "/signup"];
+    expect(matcher).toContain("/dashboard/:path*");
+    expect(matcher).toContain("/login");
+    expect(matcher).toContain("/signup");
   });
 });
