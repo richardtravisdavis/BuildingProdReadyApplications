@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, type ReactNode } from "react";
+import { useState, useMemo, useRef, useCallback, type ReactNode } from "react";
 import {
   BarChart,
   Bar,
@@ -14,6 +14,9 @@ import {
   Legend,
 } from "recharts";
 import { T } from "./roi-calculator-tooltips";
+import ScenarioManager from "./scenario-manager";
+import PDFExportButton from "./pdf-export-button";
+import type { ScenarioInputs } from "@/lib/scenario-schema";
 
 const COLORS = [
   "#FC6200",
@@ -120,7 +123,60 @@ function Section({
 }
 
 const inp =
-  "bg-[#003350] border border-[#00273B]/60 text-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#FC6200] w-full";
+  "bg-[#003350] border border-[#00273B]/60 text-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#FC6200] w-full min-h-[44px]";
+
+export const DEFAULT_INPUTS: ScenarioInputs = {
+  merchants: 500,
+  avgMonthlyVol: 85000,
+  avgMonthlyTxn: 1200,
+  avgTicket: 71,
+  pricingModel: "ic_plus",
+  cpPct: 55,
+  currentMarkupPct: 0.4,
+  currentPerTxn: 0.1,
+  flatRate: 2.7,
+  tieredQual: 1.79,
+  tieredMidQual: 2.49,
+  tieredNonQual: 3.49,
+  tieredQualPct: 55,
+  tieredMidQualPct: 30,
+  achMonthlyVol: 22000,
+  achMonthlyTxn: 85,
+  achPerTxnFee: 0.5,
+  achReturnRate: 1.8,
+  achReturnFee: 3.0,
+  gatewayFeeMonthly: 25,
+  pciFeeAnnual: 1200,
+  authRate: 92,
+  cbRate: 0.45,
+  cbFee: 25,
+  returnRate: 1.2,
+  avgReturnFee: 0.5,
+  cbLaborHrs: 2,
+  laborRate: 35,
+  fundingDays: 2,
+  costOfCapital: 6,
+  apiCostMonthly: 1500,
+  devHrsMonthly: 20,
+  termFee: 5000,
+  hasExclusivity: "yes",
+  revenueSharePct: 25,
+  onboardCostPerMerch: 120,
+  merchantChurnRate: 8,
+  avgMerchantLTV: 4200,
+  cresoraMarkupPct: 0.2,
+  cresoraPerTxn: 0.07,
+  cresoraFlatRate: 2.45,
+  cresoraAchPerTxn: 0.18,
+  cresoraAuthRateLift: 2.5,
+  cresoraRevSharePct: 40,
+  cresoraCbReduction: 20,
+  cresoraFundingDays: 1,
+  cresoraOnboardCost: 45,
+  cresoraChurnReduction: 30,
+  cresoraApiCost: 0,
+  cresoraDevHrs: 4,
+};
 
 function KPI({
   label,
@@ -139,7 +195,7 @@ function KPI({
 }) {
   return (
     <div
-      className={`rounded-xl p-4 border ${accent ? "border-[#FC6200] bg-[#FC6200]/10" : teal ? "border-[#68DDDC] bg-[#68DDDC]/10" : "border-[#003350] bg-[#003350]/60"}`}
+      className={`rounded-xl p-4 border min-h-[44px] ${accent ? "border-[#FC6200] bg-[#FC6200]/10" : teal ? "border-[#68DDDC] bg-[#68DDDC]/10" : "border-[#003350] bg-[#003350]/60"}`}
     >
       <div className="text-xs text-gray-400 mb-1 flex items-center">
         {label}
@@ -178,8 +234,8 @@ function Diff({
   const fmtVal = (v: number) =>
     isCurrency ? fmtDollar(v, 0) : fmtPct(v / 100, 2);
   return (
-    <div className="flex items-center justify-between py-2 border-b border-[#003350]/60 text-xs sm:text-sm gap-2">
-      <span className="text-gray-300 min-w-[120px] sm:w-48 flex items-center gap-1 shrink-0">
+    <div className="flex flex-col sm:flex-row sm:items-center justify-between py-2 border-b border-[#003350]/60 text-xs sm:text-sm gap-1 sm:gap-2">
+      <span className="text-gray-300 sm:w-48 flex items-center gap-1 shrink-0">
         {tag && (
           <span
             className={`text-xs font-semibold px-1.5 py-0.5 rounded ${tag === "Card" ? "bg-[#FC6200]/20 text-[#FC6200]" : "bg-[#68DDDC]/20 text-[#68DDDC]"}`}
@@ -190,82 +246,164 @@ function Diff({
         {label}
         {tip && <InfoTip text={tip} />}
       </span>
-      <span className="text-gray-400 w-20 sm:w-28 text-right shrink-0">{fmtVal(current)}</span>
-      <span className="text-white w-20 sm:w-28 text-right font-medium shrink-0">
-        {fmtVal(cresora)}
-      </span>
-      <span
-        className={`w-24 sm:w-28 text-right font-semibold shrink-0 ${good ? "text-emerald-400" : "text-red-400"}`}
-      >
-        {delta > 0 ? "+" : ""}
-        {isCurrency ? fmtDollar(delta, 0) : fmtPct(delta / 100, 2)} (
-        {pct > 0 ? "+" : ""}
-        {pct.toFixed(1)}%)
-      </span>
+      <div className="flex items-center justify-between sm:justify-end gap-2 sm:gap-0">
+        <span className="text-gray-400 sm:w-28 text-right shrink-0">{fmtVal(current)}</span>
+        <span className="text-white sm:w-28 text-right font-medium shrink-0">
+          {fmtVal(cresora)}
+        </span>
+        <span
+          className={`sm:w-28 text-right font-semibold shrink-0 ${good ? "text-emerald-400" : "text-red-400"}`}
+        >
+          {delta > 0 ? "+" : ""}
+          {isCurrency ? fmtDollar(delta, 0) : fmtPct(delta / 100, 2)} (
+          {pct > 0 ? "+" : ""}
+          {pct.toFixed(1)}%)
+        </span>
+      </div>
     </div>
   );
 }
 
 export default function ROICalculator() {
   const [tab, setTab] = useState("isv");
+  const tabContentRef = useRef<HTMLDivElement>(null);
 
   // Card inputs
-  const [merchants, setMerchants] = useState(500);
-  const [avgMonthlyVol, setAvgMonthlyVol] = useState(85000);
-  const [avgMonthlyTxn, setAvgMonthlyTxn] = useState(1200);
-  const [avgTicket, setAvgTicket] = useState(71);
-  const [pricingModel, setPricingModel] = useState("ic_plus");
-  const [cpPct, setCpPct] = useState(55);
-  const [currentMarkupPct, setCurrentMarkupPct] = useState(0.4);
-  const [currentPerTxn, setCurrentPerTxn] = useState(0.1);
-  const [flatRate, setFlatRate] = useState(2.7);
-  const [tieredQual, setTieredQual] = useState(1.79);
-  const [tieredMidQual, setTieredMidQual] = useState(2.49);
-  const [tieredNonQual, setTieredNonQual] = useState(3.49);
-  const [tieredQualPct, setTieredQualPct] = useState(55);
-  const [tieredMidQualPct, setTieredMidQualPct] = useState(30);
+  const [merchants, setMerchants] = useState(DEFAULT_INPUTS.merchants);
+  const [avgMonthlyVol, setAvgMonthlyVol] = useState(DEFAULT_INPUTS.avgMonthlyVol);
+  const [avgMonthlyTxn, setAvgMonthlyTxn] = useState(DEFAULT_INPUTS.avgMonthlyTxn);
+  const [avgTicket, setAvgTicket] = useState(DEFAULT_INPUTS.avgTicket);
+  const [pricingModel, setPricingModel] = useState(DEFAULT_INPUTS.pricingModel);
+  const [cpPct, setCpPct] = useState(DEFAULT_INPUTS.cpPct);
+  const [currentMarkupPct, setCurrentMarkupPct] = useState(DEFAULT_INPUTS.currentMarkupPct);
+  const [currentPerTxn, setCurrentPerTxn] = useState(DEFAULT_INPUTS.currentPerTxn);
+  const [flatRate, setFlatRate] = useState(DEFAULT_INPUTS.flatRate);
+  const [tieredQual, setTieredQual] = useState(DEFAULT_INPUTS.tieredQual);
+  const [tieredMidQual, setTieredMidQual] = useState(DEFAULT_INPUTS.tieredMidQual);
+  const [tieredNonQual, setTieredNonQual] = useState(DEFAULT_INPUTS.tieredNonQual);
+  const [tieredQualPct, setTieredQualPct] = useState(DEFAULT_INPUTS.tieredQualPct);
+  const [tieredMidQualPct, setTieredMidQualPct] = useState(DEFAULT_INPUTS.tieredMidQualPct);
 
   // ACH inputs
-  const [achMonthlyVol, setAchMonthlyVol] = useState(22000);
-  const [achMonthlyTxn, setAchMonthlyTxn] = useState(85);
-  const [achPerTxnFee, setAchPerTxnFee] = useState(0.5);
-  const [achReturnRate, setAchReturnRate] = useState(1.8);
-  const [achReturnFee, setAchReturnFee] = useState(3.0);
+  const [achMonthlyVol, setAchMonthlyVol] = useState(DEFAULT_INPUTS.achMonthlyVol);
+  const [achMonthlyTxn, setAchMonthlyTxn] = useState(DEFAULT_INPUTS.achMonthlyTxn);
+  const [achPerTxnFee, setAchPerTxnFee] = useState(DEFAULT_INPUTS.achPerTxnFee);
+  const [achReturnRate, setAchReturnRate] = useState(DEFAULT_INPUTS.achReturnRate);
+  const [achReturnFee, setAchReturnFee] = useState(DEFAULT_INPUTS.achReturnFee);
 
   // Platform costs
-  const [gatewayFeeMonthly, setGatewayFeeMonthly] = useState(25);
-  const [pciFeeAnnual, setPciFeeAnnual] = useState(1200);
-  const [authRate, setAuthRate] = useState(92);
-  const [cbRate, setCbRate] = useState(0.45);
-  const [cbFee, setCbFee] = useState(25);
-  const [returnRate, setReturnRate] = useState(1.2);
-  const [avgReturnFee, setAvgReturnFee] = useState(0.5);
-  const [cbLaborHrs, setCbLaborHrs] = useState(2);
-  const [laborRate, setLaborRate] = useState(35);
-  const [fundingDays, setFundingDays] = useState(2);
-  const [costOfCapital, setCostOfCapital] = useState(6);
-  const [apiCostMonthly, setApiCostMonthly] = useState(1500);
-  const [devHrsMonthly, setDevHrsMonthly] = useState(20);
-  const [termFee, setTermFee] = useState(5000);
-  const [hasExclusivity, setHasExclusivity] = useState("yes");
-  const [revenueSharePct, setRevenueSharePct] = useState(25);
-  const [onboardCostPerMerch, setOnboardCostPerMerch] = useState(120);
-  const [merchantChurnRate, setMerchantChurnRate] = useState(8);
-  const [avgMerchantLTV, setAvgMerchantLTV] = useState(4200);
+  const [gatewayFeeMonthly, setGatewayFeeMonthly] = useState(DEFAULT_INPUTS.gatewayFeeMonthly);
+  const [pciFeeAnnual, setPciFeeAnnual] = useState(DEFAULT_INPUTS.pciFeeAnnual);
+  const [authRate, setAuthRate] = useState(DEFAULT_INPUTS.authRate);
+  const [cbRate, setCbRate] = useState(DEFAULT_INPUTS.cbRate);
+  const [cbFee, setCbFee] = useState(DEFAULT_INPUTS.cbFee);
+  const [returnRate, setReturnRate] = useState(DEFAULT_INPUTS.returnRate);
+  const [avgReturnFee, setAvgReturnFee] = useState(DEFAULT_INPUTS.avgReturnFee);
+  const [cbLaborHrs, setCbLaborHrs] = useState(DEFAULT_INPUTS.cbLaborHrs);
+  const [laborRate, setLaborRate] = useState(DEFAULT_INPUTS.laborRate);
+  const [fundingDays, setFundingDays] = useState(DEFAULT_INPUTS.fundingDays);
+  const [costOfCapital, setCostOfCapital] = useState(DEFAULT_INPUTS.costOfCapital);
+  const [apiCostMonthly, setApiCostMonthly] = useState(DEFAULT_INPUTS.apiCostMonthly);
+  const [devHrsMonthly, setDevHrsMonthly] = useState(DEFAULT_INPUTS.devHrsMonthly);
+  const [termFee, setTermFee] = useState(DEFAULT_INPUTS.termFee);
+  const [hasExclusivity, setHasExclusivity] = useState(DEFAULT_INPUTS.hasExclusivity);
+  const [revenueSharePct, setRevenueSharePct] = useState(DEFAULT_INPUTS.revenueSharePct);
+  const [onboardCostPerMerch, setOnboardCostPerMerch] = useState(DEFAULT_INPUTS.onboardCostPerMerch);
+  const [merchantChurnRate, setMerchantChurnRate] = useState(DEFAULT_INPUTS.merchantChurnRate);
+  const [avgMerchantLTV, setAvgMerchantLTV] = useState(DEFAULT_INPUTS.avgMerchantLTV);
 
   // Cresora assumptions
-  const [cresoraMarkupPct, setCresoraMarkupPct] = useState(0.2);
-  const [cresoraPerTxn, setCresoraPerTxn] = useState(0.07);
-  const [cresoraFlatRate, setCresoraFlatRate] = useState(2.45);
-  const [cresoraAchPerTxn, setCresoraAchPerTxn] = useState(0.18);
-  const [cresoraAuthRateLift, setCresoraAuthRateLift] = useState(2.5);
-  const [cresoraRevSharePct, setCresoraRevSharePct] = useState(40);
-  const [cresoraCbReduction, setCresoraCbReduction] = useState(20);
-  const [cresoraFundingDays, setCresoraFundingDays] = useState(1);
-  const [cresoraOnboardCost, setCresoraOnboardCost] = useState(45);
-  const [cresoraChurnReduction, setCresoraChurnReduction] = useState(30);
-  const [cresoraApiCost, setCresoraApiCost] = useState(0);
-  const [cresoraDevHrs, setCresoraDevHrs] = useState(4);
+  const [cresoraMarkupPct, setCresoraMarkupPct] = useState(DEFAULT_INPUTS.cresoraMarkupPct);
+  const [cresoraPerTxn, setCresoraPerTxn] = useState(DEFAULT_INPUTS.cresoraPerTxn);
+  const [cresoraFlatRate, setCresoraFlatRate] = useState(DEFAULT_INPUTS.cresoraFlatRate);
+  const [cresoraAchPerTxn, setCresoraAchPerTxn] = useState(DEFAULT_INPUTS.cresoraAchPerTxn);
+  const [cresoraAuthRateLift, setCresoraAuthRateLift] = useState(DEFAULT_INPUTS.cresoraAuthRateLift);
+  const [cresoraRevSharePct, setCresoraRevSharePct] = useState(DEFAULT_INPUTS.cresoraRevSharePct);
+  const [cresoraCbReduction, setCresoraCbReduction] = useState(DEFAULT_INPUTS.cresoraCbReduction);
+  const [cresoraFundingDays, setCresoraFundingDays] = useState(DEFAULT_INPUTS.cresoraFundingDays);
+  const [cresoraOnboardCost, setCresoraOnboardCost] = useState(DEFAULT_INPUTS.cresoraOnboardCost);
+  const [cresoraChurnReduction, setCresoraChurnReduction] = useState(DEFAULT_INPUTS.cresoraChurnReduction);
+  const [cresoraApiCost, setCresoraApiCost] = useState(DEFAULT_INPUTS.cresoraApiCost);
+  const [cresoraDevHrs, setCresoraDevHrs] = useState(DEFAULT_INPUTS.cresoraDevHrs);
+
+  const loadScenario = useCallback((inputs: ScenarioInputs) => {
+    setMerchants(inputs.merchants);
+    setAvgMonthlyVol(inputs.avgMonthlyVol);
+    setAvgMonthlyTxn(inputs.avgMonthlyTxn);
+    setAvgTicket(inputs.avgTicket);
+    setPricingModel(inputs.pricingModel);
+    setCpPct(inputs.cpPct);
+    setCurrentMarkupPct(inputs.currentMarkupPct);
+    setCurrentPerTxn(inputs.currentPerTxn);
+    setFlatRate(inputs.flatRate);
+    setTieredQual(inputs.tieredQual);
+    setTieredMidQual(inputs.tieredMidQual);
+    setTieredNonQual(inputs.tieredNonQual);
+    setTieredQualPct(inputs.tieredQualPct);
+    setTieredMidQualPct(inputs.tieredMidQualPct);
+    setAchMonthlyVol(inputs.achMonthlyVol);
+    setAchMonthlyTxn(inputs.achMonthlyTxn);
+    setAchPerTxnFee(inputs.achPerTxnFee);
+    setAchReturnRate(inputs.achReturnRate);
+    setAchReturnFee(inputs.achReturnFee);
+    setGatewayFeeMonthly(inputs.gatewayFeeMonthly);
+    setPciFeeAnnual(inputs.pciFeeAnnual);
+    setAuthRate(inputs.authRate);
+    setCbRate(inputs.cbRate);
+    setCbFee(inputs.cbFee);
+    setReturnRate(inputs.returnRate);
+    setAvgReturnFee(inputs.avgReturnFee);
+    setCbLaborHrs(inputs.cbLaborHrs);
+    setLaborRate(inputs.laborRate);
+    setFundingDays(inputs.fundingDays);
+    setCostOfCapital(inputs.costOfCapital);
+    setApiCostMonthly(inputs.apiCostMonthly);
+    setDevHrsMonthly(inputs.devHrsMonthly);
+    setTermFee(inputs.termFee);
+    setHasExclusivity(inputs.hasExclusivity);
+    setRevenueSharePct(inputs.revenueSharePct);
+    setOnboardCostPerMerch(inputs.onboardCostPerMerch);
+    setMerchantChurnRate(inputs.merchantChurnRate);
+    setAvgMerchantLTV(inputs.avgMerchantLTV);
+    setCresoraMarkupPct(inputs.cresoraMarkupPct);
+    setCresoraPerTxn(inputs.cresoraPerTxn);
+    setCresoraFlatRate(inputs.cresoraFlatRate);
+    setCresoraAchPerTxn(inputs.cresoraAchPerTxn);
+    setCresoraAuthRateLift(inputs.cresoraAuthRateLift);
+    setCresoraRevSharePct(inputs.cresoraRevSharePct);
+    setCresoraCbReduction(inputs.cresoraCbReduction);
+    setCresoraFundingDays(inputs.cresoraFundingDays);
+    setCresoraOnboardCost(inputs.cresoraOnboardCost);
+    setCresoraChurnReduction(inputs.cresoraChurnReduction);
+    setCresoraApiCost(inputs.cresoraApiCost);
+    setCresoraDevHrs(inputs.cresoraDevHrs);
+  }, []);
+
+  const getCurrentInputs = useCallback((): ScenarioInputs => ({
+    merchants, avgMonthlyVol, avgMonthlyTxn, avgTicket, pricingModel, cpPct,
+    currentMarkupPct, currentPerTxn, flatRate, tieredQual, tieredMidQual,
+    tieredNonQual, tieredQualPct, tieredMidQualPct, achMonthlyVol, achMonthlyTxn,
+    achPerTxnFee, achReturnRate, achReturnFee, gatewayFeeMonthly, pciFeeAnnual,
+    authRate, cbRate, cbFee, returnRate, avgReturnFee, cbLaborHrs, laborRate,
+    fundingDays, costOfCapital, apiCostMonthly, devHrsMonthly, termFee,
+    hasExclusivity, revenueSharePct, onboardCostPerMerch, merchantChurnRate,
+    avgMerchantLTV, cresoraMarkupPct, cresoraPerTxn, cresoraFlatRate,
+    cresoraAchPerTxn, cresoraAuthRateLift, cresoraRevSharePct, cresoraCbReduction,
+    cresoraFundingDays, cresoraOnboardCost, cresoraChurnReduction, cresoraApiCost,
+    cresoraDevHrs,
+  }), [
+    merchants, avgMonthlyVol, avgMonthlyTxn, avgTicket, pricingModel, cpPct,
+    currentMarkupPct, currentPerTxn, flatRate, tieredQual, tieredMidQual,
+    tieredNonQual, tieredQualPct, tieredMidQualPct, achMonthlyVol, achMonthlyTxn,
+    achPerTxnFee, achReturnRate, achReturnFee, gatewayFeeMonthly, pciFeeAnnual,
+    authRate, cbRate, cbFee, returnRate, avgReturnFee, cbLaborHrs, laborRate,
+    fundingDays, costOfCapital, apiCostMonthly, devHrsMonthly, termFee,
+    hasExclusivity, revenueSharePct, onboardCostPerMerch, merchantChurnRate,
+    avgMerchantLTV, cresoraMarkupPct, cresoraPerTxn, cresoraFlatRate,
+    cresoraAchPerTxn, cresoraAuthRateLift, cresoraRevSharePct, cresoraCbReduction,
+    cresoraFundingDays, cresoraOnboardCost, cresoraChurnReduction, cresoraApiCost,
+    cresoraDevHrs,
+  ]);
 
   const IC_CP = 1.51,
     IC_CNP = 1.8;
@@ -512,7 +650,7 @@ export default function ROICalculator() {
   return (
     <div className="text-gray-100 font-sans">
       <div className="max-w-7xl mx-auto px-4 py-6">
-        <div className="flex gap-2 mb-8 border-b border-[#003350] overflow-x-auto">
+        <div className="flex gap-2 mb-8 border-b border-[#003350] overflow-x-auto" style={{ maskImage: "linear-gradient(to right, black 90%, transparent)", WebkitMaskImage: "linear-gradient(to right, black 90%, transparent)" }}>
           {[
             { id: "isv", label: "ISV Portfolio Input" },
             { id: "summary", label: "ISV ROI Summary" },
@@ -533,6 +671,12 @@ export default function ROICalculator() {
           ))}
         </div>
 
+        <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
+          <ScenarioManager onLoad={loadScenario} getCurrentInputs={getCurrentInputs} />
+          <PDFExportButton contentRef={tabContentRef} />
+        </div>
+
+        <div ref={tabContentRef}>
         {/* ISV INPUT */}
         {tab === "isv" && (
           <div>
@@ -590,7 +734,7 @@ export default function ROICalculator() {
 
             <Section title="Card Pricing Model" subtitle="Select your pricing structure and enter your rates" badge="Card">
               <Field label="Pricing Model" tip={T.pricingModel}>
-                <select className={inp} value={pricingModel} onChange={(e) => setPricingModel(e.target.value)}>
+                <select className={inp} value={pricingModel} onChange={(e) => setPricingModel(e.target.value as "ic_plus" | "flat" | "tiered")}>
                   <option value="ic_plus">Interchange-Plus (IC+)</option>
                   <option value="flat">Flat-Rate</option>
                   <option value="tiered">Tiered Pricing</option>
@@ -653,7 +797,7 @@ export default function ROICalculator() {
               <Field label="Current Rev Share to ISV" hint="% of residuals" tip={T.revShare}><input type="number" className={inp} value={revenueSharePct} onChange={(e) => setRevenueSharePct(+e.target.value)} min={0} max={100} /></Field>
               <Field label="Early Termination Fee" hint="$" tip={T.termFee}><input type="number" className={inp} value={termFee} onChange={(e) => setTermFee(+e.target.value)} /></Field>
               <Field label="Exclusivity Clause" tip={T.exclusivity}>
-                <select className={inp} value={hasExclusivity} onChange={(e) => setHasExclusivity(e.target.value)}>
+                <select className={inp} value={hasExclusivity} onChange={(e) => setHasExclusivity(e.target.value as "yes" | "partial" | "no")}>
                   <option value="yes">Yes — locked to single processor</option>
                   <option value="partial">Partial — preferred processor required</option>
                   <option value="no">No — free to route</option>
@@ -662,7 +806,7 @@ export default function ROICalculator() {
             </Section>
 
             <div className="mt-4">
-              <button onClick={() => setTab("summary")} className="bg-[#FC6200] hover:bg-[#FC6200] text-white font-semibold px-8 py-3 rounded-xl transition-all">
+              <button onClick={() => setTab("summary")} className="bg-[#FC6200] hover:bg-[#FC6200] text-white font-semibold px-8 py-3 rounded-xl transition-all min-h-[44px]">
                 View ROI Summary →
               </button>
             </div>
@@ -769,28 +913,32 @@ export default function ROICalculator() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
               <div className="bg-[#003350]/60 border border-[#003350] rounded-2xl p-5">
                 <h3 className="text-sm font-semibold text-[#FC6200] uppercase tracking-widest mb-4">Cost Comparison by Category</h3>
-                <ResponsiveContainer width="100%" height={260}>
-                  <BarChart data={savingsBreakdown} margin={{ top: 0, right: 10, left: 10, bottom: 0 }}>
-                    <XAxis dataKey="name" tick={{ fontSize: 9, fill: "#9ca3af" }} />
-                    <YAxis tickFormatter={(v) => "$" + fmt(v / 1000) + "k"} tick={{ fontSize: 10, fill: "#9ca3af" }} />
-                    <Tooltip formatter={(v) => fmtDollar(v as number)} contentStyle={{ background: "#00273B", border: "1px solid #003350", borderRadius: "8px" }} />
-                    <Legend wrapperStyle={{ fontSize: "11px" }} />
-                    <Bar dataKey="current" name="Current" fill="#FC6200" radius={[4, 4, 0, 0]} />
-                    <Bar dataKey="cresora" name="Cresora" fill="#68DDDC" radius={[4, 4, 0, 0]} />
-                  </BarChart>
-                </ResponsiveContainer>
+                <div className="h-[200px] sm:h-[260px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={savingsBreakdown} margin={{ top: 0, right: 10, left: 10, bottom: 0 }}>
+                      <XAxis dataKey="name" tick={{ fontSize: 9, fill: "#9ca3af" }} />
+                      <YAxis tickFormatter={(v) => "$" + fmt(v / 1000) + "k"} tick={{ fontSize: 10, fill: "#9ca3af" }} />
+                      <Tooltip formatter={(v) => fmtDollar(v as number)} contentStyle={{ background: "#00273B", border: "1px solid #003350", borderRadius: "8px" }} />
+                      <Legend wrapperStyle={{ fontSize: "11px" }} />
+                      <Bar dataKey="current" name="Current" fill="#FC6200" radius={[4, 4, 0, 0]} />
+                      <Bar dataKey="cresora" name="Cresora" fill="#68DDDC" radius={[4, 4, 0, 0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
               </div>
               <div className="bg-[#003350]/60 border border-[#003350] rounded-2xl p-5">
                 <h3 className="text-sm font-semibold text-[#FC6200] uppercase tracking-widest mb-4">Where Savings Come From</h3>
-                <ResponsiveContainer width="100%" height={260}>
-                  <PieChart>
-                    <Pie data={pieData} cx="50%" cy="50%" outerRadius={85} dataKey="value"
-                      label={({ name, percent }) => `${String(name ?? "").split(" ")[0]} ${((percent ?? 0) * 100).toFixed(0)}%`} labelLine={false} fontSize={9}>
-                      {pieData.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
-                    </Pie>
-                    <Tooltip formatter={(v) => fmtDollar(v as number)} contentStyle={{ background: "#00273B", border: "1px solid #003350", borderRadius: "8px" }} />
-                  </PieChart>
-                </ResponsiveContainer>
+                <div className="h-[200px] sm:h-[260px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie data={pieData} cx="50%" cy="50%" outerRadius={85} dataKey="value"
+                        label={({ name, percent }) => `${String(name ?? "").split(" ")[0]} ${((percent ?? 0) * 100).toFixed(0)}%`} labelLine={false} fontSize={9}>
+                        {pieData.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
+                      </Pie>
+                      <Tooltip formatter={(v) => fmtDollar(v as number)} contentStyle={{ background: "#00273B", border: "1px solid #003350", borderRadius: "8px" }} />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </div>
               </div>
             </div>
 
@@ -912,19 +1060,21 @@ export default function ROICalculator() {
               <h3 className="text-sm font-semibold text-[#FC6200] uppercase tracking-widest mb-4 flex items-center">
                 Portfolio Projection — Savings at Scale <InfoTip text="Cumulative annual savings if per-merchant improvements were applied across different portfolio sizes up to your full count." />
               </h3>
-              <ResponsiveContainer width="100%" height={220}>
-                <BarChart data={[
-                  { scale: "10", savings: merchantCalc.savings * 10 },
-                  { scale: "50", savings: merchantCalc.savings * 50 },
-                  { scale: "100", savings: merchantCalc.savings * 100 },
-                  { scale: fmt(merchants), savings: merchantCalc.savings * merchants },
-                ]} margin={{ top: 0, right: 10, left: 20, bottom: 0 }}>
-                  <XAxis dataKey="scale" tick={{ fontSize: 11, fill: "#9ca3af" }} label={{ value: "Merchants", position: "insideBottom", offset: -2, fontSize: 10, fill: "#6b7280" }} />
-                  <YAxis tickFormatter={(v) => "$" + fmt(v / 1000) + "k"} tick={{ fontSize: 10, fill: "#9ca3af" }} />
-                  <Tooltip formatter={(v) => fmtDollar(v as number)} contentStyle={{ background: "#00273B", border: "1px solid #003350", borderRadius: "8px" }} />
-                  <Bar dataKey="savings" name="Annual Savings" fill="#10b981" radius={[6, 6, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
+              <div className="h-[200px] sm:h-[260px]">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={[
+                    { scale: "10", savings: merchantCalc.savings * 10 },
+                    { scale: "50", savings: merchantCalc.savings * 50 },
+                    { scale: "100", savings: merchantCalc.savings * 100 },
+                    { scale: fmt(merchants), savings: merchantCalc.savings * merchants },
+                  ]} margin={{ top: 0, right: 10, left: 20, bottom: 0 }}>
+                    <XAxis dataKey="scale" tick={{ fontSize: 11, fill: "#9ca3af" }} label={{ value: "Merchants", position: "insideBottom", offset: -2, fontSize: 10, fill: "#6b7280" }} />
+                    <YAxis tickFormatter={(v) => "$" + fmt(v / 1000) + "k"} tick={{ fontSize: 10, fill: "#9ca3af" }} />
+                    <Tooltip formatter={(v) => fmtDollar(v as number)} contentStyle={{ background: "#00273B", border: "1px solid #003350", borderRadius: "8px" }} />
+                    <Bar dataKey="savings" name="Annual Savings" fill="#10b981" radius={[6, 6, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
               <p className="text-xs text-gray-400 mt-3 text-center">Based on average merchant profile across card + ACH rails.</p>
             </div>
           </div>
@@ -970,12 +1120,13 @@ export default function ROICalculator() {
               <Field label="Dev / Maintenance Hours" hint="hrs/month w/ Cresora"><input type="number" className={inp} value={cresoraDevHrs} onChange={(e) => setCresoraDevHrs(+e.target.value)} /></Field>
             </Section>
             <div className="mt-4">
-              <button onClick={() => setTab("summary")} className="bg-[#FC6200] hover:bg-[#FC6200] text-white font-semibold px-8 py-3 rounded-xl transition-all">
+              <button onClick={() => setTab("summary")} className="bg-[#FC6200] hover:bg-[#FC6200] text-white font-semibold px-8 py-3 rounded-xl transition-all min-h-[44px]">
                 Update ROI Summary →
               </button>
             </div>
           </div>
         )}
+        </div>
       </div>
     </div>
   );
