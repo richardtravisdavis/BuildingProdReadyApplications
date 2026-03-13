@@ -20,24 +20,42 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         const email = credentials.email as string;
         const password = credentials.password as string;
 
-        if (!email || !password) return null;
+        console.log("[auth] authorize called, email:", email, "hasPassword:", !!password);
 
-        const [user] = await db
-          .select()
-          .from(users)
-          .where(eq(users.email, email))
-          .limit(1);
+        if (!email || !password) {
+          console.log("[auth] missing email or password");
+          return null;
+        }
 
-        if (!user || !user.password) return null;
+        try {
+          const rows = await db
+            .select()
+            .from(users)
+            .where(eq(users.email, email))
+            .limit(1);
 
-        const isValid = await bcrypt.compare(password, user.password);
-        if (!isValid) return null;
+          const user = rows[0];
+          console.log("[auth] user found:", !!user);
 
-        return {
-          id: user.id,
-          name: user.name,
-          email: user.email,
-        };
+          if (!user || !user.password) {
+            console.log("[auth] no user or no password");
+            return null;
+          }
+
+          const isValid = await bcrypt.compare(password, user.password);
+          console.log("[auth] bcrypt result:", isValid);
+
+          if (!isValid) return null;
+
+          return {
+            id: user.id,
+            name: user.name,
+            email: user.email,
+          };
+        } catch (err) {
+          console.error("[auth] authorize error:", err);
+          return null;
+        }
       },
     }),
   ],
