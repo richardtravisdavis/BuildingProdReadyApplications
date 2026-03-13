@@ -115,7 +115,7 @@ export default function ScenarioManager({ onLoad, getCurrentInputs }: ScenarioMa
   const activeName = scenarios.find((s) => s.id === activeId)?.name;
 
   return (
-    <div className="flex flex-wrap items-center gap-2 mb-4">
+    <div className="flex flex-wrap items-center gap-2">
       {/* Load dropdown */}
       {scenarios.length > 0 && (
         <div className="relative group">
