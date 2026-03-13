@@ -9,6 +9,10 @@ jobs:
     name: Build, Lint & Test
     runs-on: ubuntu-latest
 
+    env:
+      DATABASE_URL: postgresql://user:pass@localhost/fake?sslmode=require
+      AUTH_SECRET: ci-dummy-secret-not-real
+
     steps:
       - uses: actions/checkout@v4
 
