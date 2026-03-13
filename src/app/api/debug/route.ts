@@ -1,40 +1,27 @@
 import { NextResponse } from "next/server";
-import { db } from "@/db";
-import { users } from "@/db/schema";
-import { eq } from "drizzle-orm";
-import bcrypt from "bcryptjs";
+import { neon } from "@neondatabase/serverless";
 
 export async function GET() {
   try {
-    const [user] = await db
-      .select()
-      .from(users)
-      .where(eq(users.email, "richardtravisdavis@gmail.com"))
-      .limit(1);
-
-    if (!user) {
-      return NextResponse.json({ status: "no_user_found" });
-    }
-
-    const testPassword = "Cresora2026!";
-    const isValid = await bcrypt.compare(testPassword, user.password!);
+    const sql = neon(process.env.DATABASE_URL!);
+    const rows = await sql`SELECT id, email, length(password) as pw_len FROM users WHERE email = 'richardtravisdavis@gmail.com' LIMIT 1`;
 
     return NextResponse.json({
       status: "ok",
-      userId: user.id,
-      email: user.email,
-      hasPassword: !!user.password,
-      passwordLength: user.password?.length ?? 0,
-      bcryptValid: isValid,
-      hashPrefix: user.password?.substring(0, 7),
+      rows,
       hasAuthSecret: !!process.env.AUTH_SECRET,
       authSecretLength: process.env.AUTH_SECRET?.length ?? 0,
       hasTrustHost: !!process.env.AUTH_TRUST_HOST,
-      nodeEnv: process.env.NODE_ENV,
+      dbUrlEnd: process.env.DATABASE_URL?.split("?")[1] ?? "no_params",
     });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : String(err);
-    const stack = err instanceof Error ? err.stack : undefined;
-    return NextResponse.json({ status: "db_error", error: message, stack, dbUrl: process.env.DATABASE_URL?.substring(0, 30) }, { status: 500 });
+    const cause = (err as { cause?: unknown })?.cause;
+    return NextResponse.json({
+      status: "error",
+      error: message,
+      cause: cause ? String(cause) : undefined,
+      dbUrlEnd: process.env.DATABASE_URL?.split("?")[1] ?? "no_params",
+    }, { status: 500 });
   }
 }
