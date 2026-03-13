@@ -395,9 +395,6 @@ export default function ROICalculator() {
   const [cresoraApiCost, setCresoraApiCost] = useState(0);
   const [cresoraDevHrs, setCresoraDevHrs] = useState(4);
 
-  // Suppress unused variable warnings for contract fields used only in display
-  void contractLength;
-
   const IC_CP = 1.51,
     IC_CNP = 1.8;
   const blendedIC = IC_CP * (cpPct / 100) + IC_CNP * ((100 - cpPct) / 100);
@@ -562,31 +559,16 @@ export default function ROICalculator() {
   ]);
 
   const merchantCalc = useMemo(() => {
-    const cardVol = avgMonthlyVol * 12,
-      cardTxn = avgMonthlyTxn * 12;
-    const achVol = achMonthlyVol * 12,
-      achTxn = achMonthlyTxn * 12;
-    const totalVol = cardVol + achVol,
-      totalTxn = cardTxn + achTxn;
-    let cp = 0,
-      crp = 0;
-    if (pricingModel === "ic_plus") {
-      cp = blendedIC / 100 + currentMarkupPct / 100;
-      crp = blendedIC / 100 + cresoraMarkupPct / 100;
-    } else if (pricingModel === "flat") {
-      cp = flatRate / 100;
-      crp = cresoraFlatRate / 100;
-    } else {
-      const tNQ = Math.max(0, 100 - tieredQualPct - tieredMidQualPct) / 100;
-      cp =
-        (tieredQual / 100) * (tieredQualPct / 100) +
-        (tieredMidQual / 100) * (tieredMidQualPct / 100) +
-        (tieredNonQual / 100) * tNQ;
-      crp = blendedIC / 100 + cresoraMarkupPct / 100;
-    }
+    const m = merchants || 1;
+    const cardVol = calc.annualCardVol / m;
+    const achVol = calc.annualAchVol / m;
+    const totalVol = calc.annualTotalVol / m;
+    const cardTxn = calc.annualCardTxn / m;
+    const achTxn = calc.annualAchTxn / m;
+    const totalTxn = calc.annualTotalTxn / m;
 
     const currentCardFees =
-      cardVol * cp +
+      cardVol * calc.cardCostPct +
       cardTxn * currentPerTxn +
       gatewayFeeMonthly * 12 +
       pciFeeAnnual +
@@ -596,7 +578,7 @@ export default function ROICalculator() {
     const currentFees = currentCardFees + currentAchFees;
 
     const cresoraCardFees =
-      cardVol * crp +
+      cardVol * calc.cresoraCardCostPct +
       cardTxn * cresoraPerTxn +
       pciFeeAnnual * 0.4 +
       cardTxn * (cbRate / 100) * cbFee * (1 - cresoraCbReduction / 100);
@@ -611,33 +593,18 @@ export default function ROICalculator() {
       (fundingDays - cresoraFundingDays) *
       (costOfCapital / 100);
     const savings = currentFees - cresoraFees + authLift + funding;
+
     return {
-      cardVol,
-      achVol,
-      totalVol,
-      cardTxn,
-      achTxn,
-      totalTxn,
-      currentFees,
-      cresoraFees,
-      currentAchFees,
-      cresoraAchFees,
-      authLift,
-      funding,
-      savings,
-      savingsPct: savings / currentFees,
-      currentCardFees,
-      cresoraCardFees,
-      cp,
-      crp,
+      cardVol, achVol, totalVol, cardTxn, achTxn, totalTxn,
+      currentFees, cresoraFees, currentCardFees, cresoraCardFees,
+      currentAchFees, cresoraAchFees, authLift, funding, savings,
+      savingsPct: currentFees ? savings / currentFees : 0,
+      cp: calc.cardCostPct, crp: calc.cresoraCardCostPct,
     };
   }, [
-    avgMonthlyVol, avgMonthlyTxn, achMonthlyVol, achMonthlyTxn, achPerTxnFee,
-    achReturnRate, achReturnFee, pricingModel, blendedIC, currentMarkupPct,
-    cresoraMarkupPct, flatRate, cresoraFlatRate, tieredQual, tieredMidQual,
-    tieredNonQual, tieredQualPct, tieredMidQualPct, currentPerTxn,
-    cresoraPerTxn, gatewayFeeMonthly, pciFeeAnnual, cbRate, cbFee,
-    cresoraCbReduction, cresoraAchPerTxn, cresoraAuthRateLift, avgTicket,
+    calc, merchants, currentPerTxn, cresoraPerTxn, gatewayFeeMonthly,
+    pciFeeAnnual, cbRate, cbFee, achPerTxnFee, achReturnRate, achReturnFee,
+    cresoraAchPerTxn, cresoraCbReduction, cresoraAuthRateLift, avgTicket,
     fundingDays, cresoraFundingDays, costOfCapital,
   ]);
 
