@@ -21,14 +21,27 @@ export default function PDFExportButton({ contentRef }: PDFExportButtonProps) {
       ]);
       const jsPDF = jspdfModule.jsPDF ?? jspdfModule.default;
 
-      // Temporarily expand element to a wide layout so the capture
-      // fills the landscape PDF page instead of being narrow.
-      const prevWidth = el.style.width;
-      const prevMinWidth = el.style.minWidth;
-      const prevPosition = el.style.position;
-      el.style.width = "1400px";
-      el.style.minWidth = "1400px";
+      // Temporarily override styles for a clean, wide capture.
+      // The content sits inside a max-w-7xl mx-auto px-4 py-6 container,
+      // which causes centering gaps and top padding in the captured image.
+      const wrapper = el.parentElement;
+      const saved = {
+        el: { width: el.style.width, minWidth: el.style.minWidth, position: el.style.position },
+        wrapper: wrapper ? {
+          maxWidth: wrapper.style.maxWidth,
+          margin: wrapper.style.margin,
+          padding: wrapper.style.padding,
+        } : null,
+      };
+
+      el.style.width = "1600px";
+      el.style.minWidth = "1600px";
       el.style.position = "absolute";
+      if (wrapper) {
+        wrapper.style.maxWidth = "none";
+        wrapper.style.margin = "0";
+        wrapper.style.padding = "0";
+      }
 
       let canvas: HTMLCanvasElement;
       try {
@@ -37,9 +50,14 @@ export default function PDFExportButton({ contentRef }: PDFExportButtonProps) {
           pixelRatio: 1.5,
         });
       } finally {
-        el.style.width = prevWidth;
-        el.style.minWidth = prevMinWidth;
-        el.style.position = prevPosition;
+        el.style.width = saved.el.width;
+        el.style.minWidth = saved.el.minWidth;
+        el.style.position = saved.el.position;
+        if (wrapper && saved.wrapper) {
+          wrapper.style.maxWidth = saved.wrapper.maxWidth;
+          wrapper.style.margin = saved.wrapper.margin;
+          wrapper.style.padding = saved.wrapper.padding;
+        }
       }
 
       const pdf = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
