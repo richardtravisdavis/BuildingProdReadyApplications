@@ -267,6 +267,7 @@ function Diff({
 export default function ROICalculator() {
   const [tab, setTab] = useState("isv");
   const tabContentRef = useRef<HTMLDivElement>(null);
+  const [pdfExporting, setPdfExporting] = useState(false);
 
   // Card inputs
   const [merchants, setMerchants] = useState(DEFAULT_INPUTS.merchants);
@@ -673,13 +674,14 @@ export default function ROICalculator() {
 
         <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
           <ScenarioManager onLoad={loadScenario} getCurrentInputs={getCurrentInputs} />
-          <PDFExportButton contentRef={tabContentRef} />
+          <PDFExportButton contentRef={tabContentRef} onBeforeExport={() => setPdfExporting(true)} onAfterExport={() => setPdfExporting(false)} />
         </div>
 
         <div ref={tabContentRef}>
         {/* ISV INPUT */}
-        {tab === "isv" && (
-          <div>
+        {(tab === "isv" || pdfExporting) && (
+          <div data-pdf-section="isv">
+            {pdfExporting && <h2 className="text-lg font-bold text-[#FC6200] uppercase tracking-widest border-b border-[#FC6200]/30 pb-2 mb-6">ISV Portfolio Input</h2>}
             <Section title="Portfolio Profile" subtitle="Your merchant portfolio overview">
               <Field label="Total Merchants in Portfolio" tip={T.merchants}>
                 <input type="number" inputMode="numeric" className={inp} value={merchants} onChange={(e) => setMerchants(+e.target.value)} />
@@ -805,17 +807,20 @@ export default function ROICalculator() {
               </Field>
             </Section>
 
+            {!pdfExporting && (
             <div className="mt-4">
               <button onClick={() => setTab("summary")} className="bg-[#FC6200] hover:bg-[#FC6200] text-white font-semibold px-8 py-3 rounded-xl transition-all min-h-[44px]">
                 View ROI Summary →
               </button>
             </div>
+            )}
           </div>
         )}
 
         {/* SUMMARY TAB */}
-        {tab === "summary" && (
-          <div>
+        {(tab === "summary" || pdfExporting) && (
+          <div data-pdf-section="summary">
+            {pdfExporting && <h2 className="text-lg font-bold text-[#FC6200] uppercase tracking-widest border-b border-[#FC6200]/30 pb-2 mb-6 mt-10">ISV ROI Summary</h2>}
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 mb-4">
               <KPI label="Total Annual Card Volume" value={fmtDollar(calc.annualCardVol)} sub={`${fmt(calc.annualCardTxn)} txns/yr`} />
               <KPI label="Total Annual ACH Volume" value={fmtDollar(calc.annualAchVol)} sub={`${fmt(calc.annualAchTxn)} txns/yr`} teal />
@@ -910,6 +915,46 @@ export default function ROICalculator() {
               </div>
             </div>
 
+            {pdfExporting ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+              <div className="bg-[#003350]/60 border border-[#003350] rounded-2xl p-5">
+                <h3 className="text-sm font-semibold text-[#FC6200] uppercase tracking-widest mb-4">Cost Comparison by Category</h3>
+                <table className="w-full text-sm text-left">
+                  <thead><tr className="border-b border-gray-600">
+                    <th className="py-2 text-gray-400">Category</th>
+                    <th className="py-2 text-[#FC6200] text-right">Current</th>
+                    <th className="py-2 text-[#68DDDC] text-right">Cresora</th>
+                    <th className="py-2 text-emerald-400 text-right">Savings</th>
+                  </tr></thead>
+                  <tbody>{savingsBreakdown.map((r) => (
+                    <tr key={r.name} className="border-b border-gray-700/50">
+                      <td className="py-1.5 text-gray-300">{r.name}</td>
+                      <td className="py-1.5 text-right text-gray-300">{fmtDollar(r.current)}</td>
+                      <td className="py-1.5 text-right text-gray-300">{fmtDollar(r.cresora)}</td>
+                      <td className="py-1.5 text-right text-emerald-400">{fmtDollar(r.current - r.cresora)}</td>
+                    </tr>
+                  ))}</tbody>
+                </table>
+              </div>
+              <div className="bg-[#003350]/60 border border-[#003350] rounded-2xl p-5">
+                <h3 className="text-sm font-semibold text-[#FC6200] uppercase tracking-widest mb-4">Where Savings Come From</h3>
+                <table className="w-full text-sm text-left">
+                  <thead><tr className="border-b border-gray-600">
+                    <th className="py-2 text-gray-400">Source</th>
+                    <th className="py-2 text-right text-gray-400">Amount</th>
+                    <th className="py-2 text-right text-gray-400">Share</th>
+                  </tr></thead>
+                  <tbody>{(() => { const total = pieData.reduce((s, d) => s + d.value, 0); return pieData.map((d) => (
+                    <tr key={d.name} className="border-b border-gray-700/50">
+                      <td className="py-1.5 text-gray-300">{d.name}</td>
+                      <td className="py-1.5 text-right text-gray-300">{fmtDollar(d.value)}</td>
+                      <td className="py-1.5 text-right text-gray-300">{total > 0 ? ((d.value / total) * 100).toFixed(1) : 0}%</td>
+                    </tr>
+                  )); })()}</tbody>
+                </table>
+              </div>
+            </div>
+            ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
               <div className="bg-[#003350]/60 border border-[#003350] rounded-2xl p-5">
                 <h3 className="text-sm font-semibold text-[#FC6200] uppercase tracking-widest mb-4">Cost Comparison by Category</h3>
@@ -941,6 +986,7 @@ export default function ROICalculator() {
                 </div>
               </div>
             </div>
+            )}
 
             <div className="bg-gradient-to-r from-[#00273B]/60 to-[#003350]/60 border border-[#FC6200]/50 rounded-2xl p-5">
               <h3 className="text-sm font-semibold text-[#FC6200] uppercase tracking-widest mb-4">ROI Snapshot</h3>
@@ -955,8 +1001,9 @@ export default function ROICalculator() {
         )}
 
         {/* MERCHANT TAB */}
-        {tab === "merchant" && (
-          <div>
+        {(tab === "merchant" || pdfExporting) && (
+          <div data-pdf-section="merchant">
+            {pdfExporting && <h2 className="text-lg font-bold text-[#FC6200] uppercase tracking-widest border-b border-[#FC6200]/30 pb-2 mb-6 mt-10">Merchant-Level ROI</h2>}
             <div className="bg-[#FC6200]/10 border border-[#FC6200]/30 rounded-xl p-4 mb-6 text-sm text-[#FC6200]/80">
               Single merchant profile: <strong>{fmtDollar(avgMonthlyVol)}/mo card</strong> · <strong>{fmt(avgMonthlyTxn)} card txns/mo</strong> · <strong className="text-[#68DDDC]">{fmtDollar(achMonthlyVol)}/mo ACH</strong> · <strong className="text-[#68DDDC]">{fmt(achMonthlyTxn)} ACH txns/mo</strong>
             </div>
@@ -1060,29 +1107,50 @@ export default function ROICalculator() {
               <h3 className="text-sm font-semibold text-[#FC6200] uppercase tracking-widest mb-4 flex items-center">
                 Portfolio Projection — Savings at Scale <InfoTip text="Cumulative annual savings if per-merchant improvements were applied across different portfolio sizes up to your full count." />
               </h3>
-              <div className="h-[200px] sm:h-[260px]">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={[
+              {pdfExporting ? (
+                <table className="w-full text-sm text-left">
+                  <thead><tr className="border-b border-gray-600">
+                    <th className="py-2 text-gray-400">Merchants</th>
+                    <th className="py-2 text-right text-emerald-400">Annual Savings</th>
+                  </tr></thead>
+                  <tbody>{[
                     { scale: "10", savings: merchantCalc.savings * 10 },
                     { scale: "50", savings: merchantCalc.savings * 50 },
                     { scale: "100", savings: merchantCalc.savings * 100 },
                     { scale: fmt(merchants), savings: merchantCalc.savings * merchants },
-                  ]} margin={{ top: 0, right: 10, left: 20, bottom: 0 }}>
-                    <XAxis dataKey="scale" tick={{ fontSize: 11, fill: "#9ca3af" }} label={{ value: "Merchants", position: "insideBottom", offset: -2, fontSize: 10, fill: "#6b7280" }} />
-                    <YAxis tickFormatter={(v) => "$" + fmt(v / 1000) + "k"} tick={{ fontSize: 10, fill: "#9ca3af" }} />
-                    <Tooltip formatter={(v) => fmtDollar(v as number)} contentStyle={{ background: "#00273B", border: "1px solid #003350", borderRadius: "8px" }} />
-                    <Bar dataKey="savings" name="Annual Savings" fill="#10b981" radius={[6, 6, 0, 0]} />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
+                  ].map((r) => (
+                    <tr key={r.scale} className="border-b border-gray-700/50">
+                      <td className="py-1.5 text-gray-300">{r.scale}</td>
+                      <td className="py-1.5 text-right text-emerald-400">{fmtDollar(r.savings)}</td>
+                    </tr>
+                  ))}</tbody>
+                </table>
+              ) : (
+                <div className="h-[200px] sm:h-[260px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={[
+                      { scale: "10", savings: merchantCalc.savings * 10 },
+                      { scale: "50", savings: merchantCalc.savings * 50 },
+                      { scale: "100", savings: merchantCalc.savings * 100 },
+                      { scale: fmt(merchants), savings: merchantCalc.savings * merchants },
+                    ]} margin={{ top: 0, right: 10, left: 20, bottom: 0 }}>
+                      <XAxis dataKey="scale" tick={{ fontSize: 11, fill: "#9ca3af" }} label={{ value: "Merchants", position: "insideBottom", offset: -2, fontSize: 10, fill: "#6b7280" }} />
+                      <YAxis tickFormatter={(v) => "$" + fmt(v / 1000) + "k"} tick={{ fontSize: 10, fill: "#9ca3af" }} />
+                      <Tooltip formatter={(v) => fmtDollar(v as number)} contentStyle={{ background: "#00273B", border: "1px solid #003350", borderRadius: "8px" }} />
+                      <Bar dataKey="savings" name="Annual Savings" fill="#10b981" radius={[6, 6, 0, 0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              )}
               <p className="text-xs text-gray-400 mt-3 text-center">Based on average merchant profile across card + ACH rails.</p>
             </div>
           </div>
         )}
 
         {/* ASSUMPTIONS TAB */}
-        {tab === "assumptions" && (
-          <div>
+        {(tab === "assumptions" || pdfExporting) && (
+          <div data-pdf-section="assumptions">
+            {pdfExporting && <h2 className="text-lg font-bold text-[#FC6200] uppercase tracking-widest border-b border-[#FC6200]/30 pb-2 mb-6 mt-10">Cresora Assumptions</h2>}
             <div className="bg-yellow-900/20 border border-yellow-700/40 rounded-xl p-4 mb-6 text-sm text-yellow-200">
               Adjust these to match your Cresora proposal or expected outcomes.
             </div>
@@ -1119,11 +1187,13 @@ export default function ROICalculator() {
               <Field label="Cresora API Cost" hint="$/month"><input type="number" inputMode="numeric" className={inp} value={cresoraApiCost} onChange={(e) => setCresoraApiCost(+e.target.value)} /></Field>
               <Field label="Dev / Maintenance Hours" hint="hrs/month w/ Cresora"><input type="number" inputMode="numeric" className={inp} value={cresoraDevHrs} onChange={(e) => setCresoraDevHrs(+e.target.value)} /></Field>
             </Section>
+            {!pdfExporting && (
             <div className="mt-4">
               <button onClick={() => setTab("summary")} className="bg-[#FC6200] hover:bg-[#FC6200] text-white font-semibold px-8 py-3 rounded-xl transition-all min-h-[44px]">
                 Update ROI Summary →
               </button>
             </div>
+            )}
           </div>
         )}
         </div>
