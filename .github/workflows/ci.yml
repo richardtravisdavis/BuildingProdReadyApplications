@@ -11,9 +11,9 @@ jobs:
 
     env:
       DATABASE_URL: postgresql://user:pass@localhost/fake?sslmode=require
-      AUTH_SECRET: ci-dummy-secret-not-real
+      BETTER_AUTH_SECRET: ci-dummy-secret-not-real-at-least-32chars
+      BETTER_AUTH_URL: http://localhost:3000
       RESEND_API_KEY: re_ci_dummy_key_not_real
-      APP_URL: http://localhost:3000
       EMAIL_FROM: onboarding@resend.dev
 
     steps:
@@ -26,6 +26,15 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
+
+      - name: Cache Next.js build
+        uses: actions/cache@v4
+        with:
+          path: .next/cache
+          key: nextjs-${{ runner.os }}-${{ hashFiles('package-lock.json') }}-${{ hashFiles('src/**') }}
+          restore-keys: |
+            nextjs-${{ runner.os }}-${{ hashFiles('package-lock.json') }}-
+            nextjs-${{ runner.os }}-
 
       - name: Lint
         run: npm run lint
