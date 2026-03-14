@@ -15,43 +15,17 @@ export default function PDFExportButton({ contentRef }: PDFExportButtonProps) {
 
     setExporting(true);
     try {
-      const [html2canvasModule, jspdfModule] = await Promise.all([
-        import("html2canvas"),
+      const [{ toPng }, jspdfModule] = await Promise.all([
+        import("html-to-image"),
         import("jspdf"),
       ]);
-      const html2canvas = html2canvasModule.default ?? html2canvasModule;
       const jsPDF = jspdfModule.jsPDF ?? jspdfModule.default;
 
-      // html2canvas v1.x cannot parse oklch/lab/oklab color functions
-      // used by Tailwind CSS v4. Convert them to rgb using a temporary element.
-      function oklchToRgb(value: string): string {
-        const tmp = document.createElement("div");
-        tmp.style.color = value;
-        document.body.appendChild(tmp);
-        const rgb = getComputedStyle(tmp).color;
-        document.body.removeChild(tmp);
-        return rgb;
-      }
-
-      const canvas = await html2canvas(el, {
+      const imgData = await toPng(el, {
         backgroundColor: "#00273B",
-        scale: 2,
-        useCORS: true,
-        logging: false,
-        onclone: (doc) => {
-          // Replace oklch/lab/oklab values in all stylesheets with rgb equivalents
-          const colorFnRe = /oklch\([^)]+\)|lab\([^)]+\)|oklab\([^)]+\)/g;
-          for (const sheet of doc.querySelectorAll("style")) {
-            if (sheet.textContent && colorFnRe.test(sheet.textContent)) {
-              sheet.textContent = sheet.textContent.replace(colorFnRe, (match) =>
-                oklchToRgb(match)
-              );
-            }
-          }
-        },
+        pixelRatio: 2,
       });
 
-      const imgData = canvas.toDataURL("image/png");
       const pdf = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
 
       const pageWidth = pdf.internal.pageSize.getWidth();
@@ -67,11 +41,20 @@ export default function PDFExportButton({ contentRef }: PDFExportButtonProps) {
       pdf.setTextColor(156, 163, 175);
       pdf.text(new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" }), pageWidth - 10, 12, { align: "right" });
 
-      // Content
+      // Content — measure image dimensions from the data URL
       const contentTop = 20;
       const availableHeight = pageHeight - contentTop - 5;
       const imgWidth = pageWidth - 10;
-      const imgHeight = (canvas.height / canvas.width) * imgWidth;
+
+      // Load image to get natural dimensions for aspect ratio
+      const img = new Image();
+      await new Promise<void>((resolve, reject) => {
+        img.onload = () => resolve();
+        img.onerror = reject;
+        img.src = imgData;
+      });
+
+      const imgHeight = (img.naturalHeight / img.naturalWidth) * imgWidth;
 
       if (imgHeight <= availableHeight) {
         pdf.addImage(imgData, "PNG", 5, contentTop, imgWidth, imgHeight);
