@@ -6,6 +6,25 @@ interface PDFExportButtonProps {
   contentRef: RefObject<HTMLDivElement | null>;
 }
 
+// Save and restore inline styles for an element
+function saveStyles(el: HTMLElement, props: string[]) {
+  const saved: Record<string, string> = {};
+  for (const p of props) {
+    saved[p] = el.style.getPropertyValue(p);
+  }
+  return saved;
+}
+
+function restoreStyles(el: HTMLElement, saved: Record<string, string>) {
+  for (const [p, v] of Object.entries(saved)) {
+    if (v) {
+      el.style.setProperty(p, v);
+    } else {
+      el.style.removeProperty(p);
+    }
+  }
+}
+
 export default function PDFExportButton({ contentRef }: PDFExportButtonProps) {
   const [exporting, setExporting] = useState(false);
 
@@ -21,26 +40,37 @@ export default function PDFExportButton({ contentRef }: PDFExportButtonProps) {
       ]);
       const jsPDF = jspdfModule.jsPDF ?? jspdfModule.default;
 
-      // Temporarily override styles for a clean, wide capture.
-      // The content sits inside a max-w-7xl mx-auto px-4 py-6 container,
-      // which causes centering gaps and top padding in the captured image.
-      const wrapper = el.parentElement;
-      const saved = {
-        el: { width: el.style.width, minWidth: el.style.minWidth, position: el.style.position },
-        wrapper: wrapper ? {
-          maxWidth: wrapper.style.maxWidth,
-          margin: wrapper.style.margin,
-          padding: wrapper.style.padding,
-        } : null,
-      };
+      // The content ref sits inside a max-w-7xl mx-auto px-4 py-6 container.
+      // We need to remove those constraints so the capture fills the full width
+      // with no centering gaps or padding.
+      const overrides: { el: HTMLElement; saved: Record<string, string> }[] = [];
 
-      el.style.width = "1600px";
-      el.style.minWidth = "1600px";
-      el.style.position = "absolute";
-      if (wrapper) {
-        wrapper.style.maxWidth = "none";
-        wrapper.style.margin = "0";
-        wrapper.style.padding = "0";
+      // Override the captured element itself
+      const elProps = ["width", "min-width"];
+      overrides.push({ el, saved: saveStyles(el, elProps) });
+      el.style.setProperty("width", "1600px", "important");
+      el.style.setProperty("min-width", "1600px", "important");
+
+      // Walk up ancestors and remove max-width, margin, and padding constraints
+      let ancestor = el.parentElement;
+      while (ancestor && ancestor !== document.body) {
+        const computed = getComputedStyle(ancestor);
+        const needsOverride =
+          computed.maxWidth !== "none" ||
+          computed.marginLeft === "auto" ||
+          computed.paddingTop !== "0px" ||
+          computed.paddingLeft !== "0px";
+
+        if (needsOverride) {
+          const props = ["max-width", "margin", "padding", "width", "min-width"];
+          overrides.push({ el: ancestor, saved: saveStyles(ancestor, props) });
+          ancestor.style.setProperty("max-width", "none", "important");
+          ancestor.style.setProperty("margin", "0", "important");
+          ancestor.style.setProperty("padding", "0", "important");
+          ancestor.style.setProperty("width", "1600px", "important");
+          ancestor.style.setProperty("min-width", "1600px", "important");
+        }
+        ancestor = ancestor.parentElement;
       }
 
       let canvas: HTMLCanvasElement;
@@ -50,13 +80,9 @@ export default function PDFExportButton({ contentRef }: PDFExportButtonProps) {
           pixelRatio: 1.5,
         });
       } finally {
-        el.style.width = saved.el.width;
-        el.style.minWidth = saved.el.minWidth;
-        el.style.position = saved.el.position;
-        if (wrapper && saved.wrapper) {
-          wrapper.style.maxWidth = saved.wrapper.maxWidth;
-          wrapper.style.margin = saved.wrapper.margin;
-          wrapper.style.padding = saved.wrapper.padding;
+        // Restore all overridden styles
+        for (const { el: e, saved } of overrides) {
+          restoreStyles(e, saved);
         }
       }
 
@@ -69,10 +95,7 @@ export default function PDFExportButton({ contentRef }: PDFExportButtonProps) {
       const usableWidth = pageWidth - margin * 2;
       const usableHeight = pageHeight - contentTop - margin;
 
-      // Scale image to fill page width
       const imgWidthMm = usableWidth;
-
-      // Slice the canvas into page-sized chunks
       const pxPerMm = canvas.width / imgWidthMm;
       const sliceHeightPx = Math.floor(usableHeight * pxPerMm);
       const totalPages = Math.ceil(canvas.height / sliceHeightPx);
@@ -80,7 +103,7 @@ export default function PDFExportButton({ contentRef }: PDFExportButtonProps) {
       for (let page = 0; page < totalPages; page++) {
         if (page > 0) pdf.addPage();
 
-        // Branding header on every page
+        // Branding header
         pdf.setFillColor(0, 39, 59);
         pdf.rect(0, 0, pageWidth, headerHeight, "F");
         pdf.setFontSize(14);
