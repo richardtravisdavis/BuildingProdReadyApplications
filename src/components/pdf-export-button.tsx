@@ -21,10 +21,26 @@ export default function PDFExportButton({ contentRef }: PDFExportButtonProps) {
       ]);
       const jsPDF = jspdfModule.jsPDF ?? jspdfModule.default;
 
-      const imgData = await toPng(el, {
-        backgroundColor: "#00273B",
-        pixelRatio: 2,
-      });
+      // Temporarily expand element to a wide layout so the capture
+      // fills the landscape PDF page instead of being narrow.
+      const prevWidth = el.style.width;
+      const prevMinWidth = el.style.minWidth;
+      const prevPosition = el.style.position;
+      el.style.width = "1400px";
+      el.style.minWidth = "1400px";
+      el.style.position = "absolute";
+
+      let imgData: string;
+      try {
+        imgData = await toPng(el, {
+          backgroundColor: "#00273B",
+          pixelRatio: 2,
+        });
+      } finally {
+        el.style.width = prevWidth;
+        el.style.minWidth = prevMinWidth;
+        el.style.position = prevPosition;
+      }
 
       const pdf = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
 
