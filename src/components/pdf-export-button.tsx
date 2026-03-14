@@ -22,11 +22,33 @@ export default function PDFExportButton({ contentRef }: PDFExportButtonProps) {
       const html2canvas = html2canvasModule.default ?? html2canvasModule;
       const jsPDF = jspdfModule.jsPDF ?? jspdfModule.default;
 
+      // html2canvas v1.x cannot parse oklch/lab/oklab color functions
+      // used by Tailwind CSS v4. Convert them to rgb using a temporary element.
+      function oklchToRgb(value: string): string {
+        const tmp = document.createElement("div");
+        tmp.style.color = value;
+        document.body.appendChild(tmp);
+        const rgb = getComputedStyle(tmp).color;
+        document.body.removeChild(tmp);
+        return rgb;
+      }
+
       const canvas = await html2canvas(el, {
         backgroundColor: "#00273B",
         scale: 2,
         useCORS: true,
         logging: false,
+        onclone: (doc) => {
+          // Replace oklch/lab/oklab values in all stylesheets with rgb equivalents
+          const colorFnRe = /oklch\([^)]+\)|lab\([^)]+\)|oklab\([^)]+\)/g;
+          for (const sheet of doc.querySelectorAll("style")) {
+            if (sheet.textContent && colorFnRe.test(sheet.textContent)) {
+              sheet.textContent = sheet.textContent.replace(colorFnRe, (match) =>
+                oklchToRgb(match)
+              );
+            }
+          }
+        },
       });
 
       const imgData = canvas.toDataURL("image/png");
