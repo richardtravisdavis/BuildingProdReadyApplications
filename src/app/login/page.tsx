@@ -44,20 +44,6 @@ export default function LoginPage() {
           <p className="text-[#68DDDC] mt-4 text-center max-w-md text-lg">
             Stop overpaying for merchant processing. See how much you could save.
           </p>
-          <div className="mt-12 grid grid-cols-3 gap-6 text-center max-w-sm">
-            <div>
-              <div className="text-2xl font-bold text-[#FC6200]">50+</div>
-              <div className="text-xs text-gray-400 mt-1">ISV Partners</div>
-            </div>
-            <div>
-              <div className="text-2xl font-bold text-[#68DDDC]">$2.1B</div>
-              <div className="text-xs text-gray-400 mt-1">Volume Processed</div>
-            </div>
-            <div>
-              <div className="text-2xl font-bold text-[#FFA622]">38%</div>
-              <div className="text-xs text-gray-400 mt-1">Avg Savings</div>
-            </div>
-          </div>
         </>
       }
     >
