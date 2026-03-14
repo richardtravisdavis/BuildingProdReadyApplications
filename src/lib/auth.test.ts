@@ -24,9 +24,9 @@ vi.mock("@/db", () => ({
 }));
 
 vi.mock("resend", () => ({
-  Resend: vi.fn(() => ({
-    emails: { send: vi.fn() },
-  })),
+  Resend: class Resend {
+    emails = { send: vi.fn() };
+  },
 }));
 
 vi.mock("bcryptjs", () => ({

@@ -36,9 +36,13 @@ vi.mock("@/components/cresora-logo", () => ({
   default: () => <svg data-testid="cresora-logo" />,
 }));
 
-// Mock fetch
-const mockFetch = vi.fn();
-global.fetch = mockFetch;
+// Mock auth-client
+const mockRequestPasswordReset = vi.fn();
+vi.mock("@/lib/auth-client", () => ({
+  authClient: {
+    requestPasswordReset: (...args: unknown[]) => mockRequestPasswordReset(...args),
+  },
+}));
 
 describe("Forgot Password Page", () => {
   beforeEach(() => {
@@ -59,10 +63,7 @@ describe("Forgot Password Page", () => {
   });
 
   it("shows success message after submission", async () => {
-    mockFetch.mockResolvedValue({
-      ok: true,
-      json: () => Promise.resolve({ message: "Email sent" }),
-    });
+    mockRequestPasswordReset.mockResolvedValue({ data: {}, error: null });
     const user = userEvent.setup();
 
     render(<ForgotPasswordPage />);
@@ -76,9 +77,9 @@ describe("Forgot Password Page", () => {
   });
 
   it("shows error when API fails", async () => {
-    mockFetch.mockResolvedValue({
-      ok: false,
-      json: () => Promise.resolve({ error: "Too many requests. Please try again later." }),
+    mockRequestPasswordReset.mockResolvedValue({
+      data: null,
+      error: { message: "Too many requests. Please try again later.", status: 429 },
     });
     const user = userEvent.setup();
 
@@ -93,7 +94,7 @@ describe("Forgot Password Page", () => {
   });
 
   it("shows loading state while submitting", async () => {
-    mockFetch.mockReturnValue(new Promise(() => {}));
+    mockRequestPasswordReset.mockReturnValue(new Promise(() => {}));
     const user = userEvent.setup();
 
     render(<ForgotPasswordPage />);
@@ -104,11 +105,8 @@ describe("Forgot Password Page", () => {
     expect(await screen.findByText("Sending...")).toBeInTheDocument();
   });
 
-  it("calls API with correct payload", async () => {
-    mockFetch.mockResolvedValue({
-      ok: true,
-      json: () => Promise.resolve({ message: "Email sent" }),
-    });
+  it("calls authClient with correct payload", async () => {
+    mockRequestPasswordReset.mockResolvedValue({ data: {}, error: null });
     const user = userEvent.setup();
 
     render(<ForgotPasswordPage />);
@@ -116,10 +114,9 @@ describe("Forgot Password Page", () => {
     await user.type(screen.getByPlaceholderText("you@example.com"), "travis@test.com");
     await user.click(screen.getByText("Send reset link"));
 
-    expect(mockFetch).toHaveBeenCalledWith("/api/auth/forgot-password", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email: "travis@test.com" }),
+    expect(mockRequestPasswordReset).toHaveBeenCalledWith({
+      email: "travis@test.com",
+      redirectTo: "/reset-password",
     });
   });
 });

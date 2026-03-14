@@ -3,9 +3,18 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import SettingsPage from "./page";
 
+// Mock auth-client
+const mockChangePassword = vi.fn();
+vi.mock("@/lib/auth-client", () => ({
+  authClient: {
+    changePassword: (...args: unknown[]) => mockChangePassword(...args),
+  },
+}));
+
 describe("SettingsPage", () => {
   beforeEach(() => {
     vi.restoreAllMocks();
+    mockChangePassword.mockReset();
   });
 
   it("renders the page heading", () => {
@@ -90,8 +99,8 @@ describe("SettingsPage", () => {
   });
 
   it("submits password form and shows success", async () => {
+    mockChangePassword.mockResolvedValue({ data: {}, error: null });
     const user = userEvent.setup();
-    vi.spyOn(global, "fetch").mockResolvedValueOnce(new Response(JSON.stringify({}), { status: 200 }));
 
     render(<SettingsPage />);
 
