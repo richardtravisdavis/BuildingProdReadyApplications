@@ -1,8 +1,11 @@
 import { auth } from "@/lib/auth";
+import { headers } from "next/headers";
 import ROICalculator from "@/components/roi-calculator";
 
 export default async function DashboardPage() {
-  const session = await auth();
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
 
   return (
     <>

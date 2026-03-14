@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import AuthLayout from "@/components/auth-layout";
+import { authClient } from "@/lib/auth-client";
 
 function ResetPasswordForm() {
   const searchParams = useSearchParams();
@@ -31,16 +32,13 @@ function ResetPasswordForm() {
       return;
     }
 
-    const res = await fetch("/api/auth/reset-password", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ token, password }),
+    const { error } = await authClient.resetPassword({
+      newPassword: password,
+      token: token!,
     });
 
-    const data = await res.json();
-
-    if (!res.ok) {
-      setError(data.error || "Something went wrong");
+    if (error) {
+      setError(error.message ?? "Something went wrong");
       setLoading(false);
       return;
     }

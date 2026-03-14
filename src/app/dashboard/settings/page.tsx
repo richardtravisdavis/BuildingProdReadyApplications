@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { authClient } from "@/lib/auth-client";
 
 export default function SettingsPage() {
   const [name, setName] = useState("");
@@ -45,26 +46,22 @@ export default function SettingsPage() {
     }
     setSaving(true);
     setMessage(null);
-    try {
-      const res = await fetch("/api/user/password", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ currentPassword, newPassword }),
-      });
-      if (!res.ok) {
-        const data = await res.json();
-        setMessage({ type: "error", text: data.error || "Failed to change password" });
-      } else {
-        setMessage({ type: "success", text: "Password changed successfully" });
-        setCurrentPassword("");
-        setNewPassword("");
-        setConfirmPassword("");
-      }
-    } catch {
-      setMessage({ type: "error", text: "Something went wrong" });
-    } finally {
-      setSaving(false);
+
+    const { error } = await authClient.changePassword({
+      currentPassword,
+      newPassword,
+      revokeOtherSessions: true,
+    });
+
+    if (error) {
+      setMessage({ type: "error", text: error.message ?? "Failed to change password" });
+    } else {
+      setMessage({ type: "success", text: "Password changed successfully" });
+      setCurrentPassword("");
+      setNewPassword("");
+      setConfirmPassword("");
     }
+    setSaving(false);
   }
 
   const inputClass =

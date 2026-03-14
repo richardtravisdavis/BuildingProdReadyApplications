@@ -3,6 +3,16 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import SignupPage from "./page";
 
+// Mock auth-client
+const mockSignUpEmail = vi.fn();
+vi.mock("@/lib/auth-client", () => ({
+  authClient: {
+    signUp: {
+      email: (...args: unknown[]) => mockSignUpEmail(...args),
+    },
+  },
+}));
+
 // Mock next/navigation
 const mockPush = vi.fn();
 vi.mock("next/navigation", () => ({
@@ -37,10 +47,6 @@ vi.mock("@/components/cresora-logo", () => ({
   default: () => <svg data-testid="cresora-logo" />,
 }));
 
-// Mock fetch for signup API
-const mockFetch = vi.fn();
-global.fetch = mockFetch;
-
 describe("Signup Page", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -66,10 +72,9 @@ describe("Signup Page", () => {
     expect(loginLink.closest("a")).toHaveAttribute("href", "/login");
   });
 
-  it("shows error when signup API fails", async () => {
-    mockFetch.mockResolvedValue({
-      ok: false,
-      json: () => Promise.resolve({ error: "An account with this email already exists" }),
+  it("shows error when signup fails", async () => {
+    mockSignUpEmail.mockResolvedValue({
+      error: { message: "An account with this email already exists" },
     });
     const user = userEvent.setup();
 
@@ -86,7 +91,7 @@ describe("Signup Page", () => {
 
   it("shows loading state while submitting", async () => {
     // Never resolve to keep loading state
-    mockFetch.mockReturnValue(new Promise(() => {}));
+    mockSignUpEmail.mockReturnValue(new Promise(() => {}));
     const user = userEvent.setup();
 
     render(<SignupPage />);
@@ -98,18 +103,10 @@ describe("Signup Page", () => {
     expect(await screen.findByText("Creating account...")).toBeInTheDocument();
   });
 
-  it("calls signup API with correct payload", async () => {
-    mockFetch.mockResolvedValue({
-      ok: true,
-      json: () => Promise.resolve({ message: "Account created" }),
-    });
-
-    // Mock dynamic import for next-auth/react signIn
-    vi.doMock("next-auth/react", () => ({
-      signIn: vi.fn().mockResolvedValue({ error: null }),
-    }));
-
+  it("redirects to verify-email on successful signup", async () => {
+    mockSignUpEmail.mockResolvedValue({ error: null });
     const user = userEvent.setup();
+
     render(<SignupPage />);
 
     await user.type(screen.getByPlaceholderText("Your name"), "Travis");
@@ -117,14 +114,6 @@ describe("Signup Page", () => {
     await user.type(screen.getByPlaceholderText("••••••••"), "securepass");
     await user.click(screen.getByText("Sign up"));
 
-    expect(mockFetch).toHaveBeenCalledWith("/api/auth/signup", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        name: "Travis",
-        email: "travis@test.com",
-        password: "securepass",
-      }),
-    });
+    expect(mockPush).toHaveBeenCalledWith("/verify-email");
   });
 });

@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import AuthLayout from "@/components/auth-layout";
+import { authClient } from "@/lib/auth-client";
 
 export default function SignupPage() {
   const router = useRouter();
@@ -23,32 +24,19 @@ export default function SignupPage() {
     const email = formData.get("email") as string;
     const password = formData.get("password") as string;
 
-    const res = await fetch("/api/auth/signup", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, email, password }),
+    const { error } = await authClient.signUp.email({
+      name,
+      email,
+      password,
     });
 
-    if (!res.ok) {
-      const data = await res.json();
-      setError(data.error || "Something went wrong");
+    if (error) {
+      setError(error.message ?? "Something went wrong");
       setLoading(false);
       return;
     }
 
-    // Auto sign-in after signup
-    const { signIn } = await import("next-auth/react");
-    const result = await signIn("credentials", {
-      email,
-      password,
-      redirect: false,
-    });
-
-    if (result?.error) {
-      router.push("/login");
-    } else {
-      router.push("/verify-email");
-    }
+    router.push("/verify-email");
   }
 
   return (

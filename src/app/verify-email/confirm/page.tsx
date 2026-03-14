@@ -3,13 +3,12 @@
 import { Suspense, useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { useSession } from "next-auth/react";
+import { authClient } from "@/lib/auth-client";
 import AuthLayout from "@/components/auth-layout";
 
 function VerifyEmailConfirmForm() {
   const searchParams = useSearchParams();
   const token = searchParams.get("token");
-  const { update } = useSession();
   const hasVerified = useRef(false);
 
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
@@ -21,32 +20,22 @@ function VerifyEmailConfirmForm() {
 
     async function verifyEmail() {
       setStatus("loading");
-      try {
-        const res = await fetch("/api/auth/verify-email", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ token }),
-        });
+      const { error } = await authClient.verifyEmail({
+        query: { token: token! },
+      });
 
-        const data = await res.json();
-
-        if (!res.ok) {
-          setStatus("error");
-          setError(data.error || "Something went wrong");
-          return;
-        }
-
-        await update();
-        setStatus("success");
-        window.location.href = "/dashboard";
-      } catch {
+      if (error) {
         setStatus("error");
-        setError("Something went wrong");
+        setError(error.message ?? "Invalid or expired verification link.");
+        return;
       }
+
+      setStatus("success");
+      window.location.href = "/dashboard";
     }
 
     verifyEmail();
-  }, [token, update]);
+  }, [token]);
 
   if (!token) {
     return (
@@ -73,14 +62,8 @@ function VerifyEmailConfirmForm() {
     return (
       <div className="text-center space-y-4">
         <p className="text-green-400 bg-green-400/10 rounded-lg py-3 px-4">
-          Email verified successfully!
+          Email verified successfully! Redirecting...
         </p>
-        <Link
-          href="/dashboard"
-          className="inline-block bg-[#FC6200] hover:bg-[#FC6200]/90 text-white font-medium py-2 px-6 rounded-md"
-        >
-          Go to Dashboard
-        </Link>
       </div>
     );
   }

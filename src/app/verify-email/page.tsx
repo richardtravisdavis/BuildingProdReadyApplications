@@ -1,9 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { signOut } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import AuthLayout from "@/components/auth-layout";
+import { authClient } from "@/lib/auth-client";
 
 export default function VerifyEmailPage() {
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
@@ -13,25 +13,19 @@ export default function VerifyEmailPage() {
     setStatus("loading");
     setMessage("");
 
-    try {
-      const res = await fetch("/api/auth/resend-verification", {
-        method: "POST",
-      });
+    const { error } = await authClient.sendVerificationEmail({
+      email: "", // better-auth uses the current session's email
+      callbackURL: "/dashboard",
+    });
 
-      const data = await res.json();
-
-      if (!res.ok) {
-        setStatus("error");
-        setMessage(data.error || "Something went wrong");
-        return;
-      }
-
-      setStatus("success");
-      setMessage("Verification email sent! Check your inbox.");
-    } catch {
+    if (error) {
       setStatus("error");
-      setMessage("Something went wrong");
+      setMessage(error.message ?? "Something went wrong");
+      return;
     }
+
+    setStatus("success");
+    setMessage("Verification email sent! Check your inbox.");
   }
 
   return (
@@ -69,7 +63,7 @@ export default function VerifyEmailPage() {
         </Button>
 
         <button
-          onClick={() => signOut({ callbackUrl: "/login" })}
+          onClick={() => authClient.signOut().then(() => window.location.href = "/login")}
           className="text-sm text-gray-400 hover:text-gray-300 underline"
         >
           Sign out

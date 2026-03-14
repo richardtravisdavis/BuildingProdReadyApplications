@@ -1,21 +1,16 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
+import { headers } from "next/headers";
 import { db } from "@/db";
 import { scenarios } from "@/db/schema";
 import { eq, desc } from "drizzle-orm";
 import { createScenarioSchema } from "@/lib/scenario-schema";
-import { rateLimit } from "@/lib/rate-limit";
 
 export async function GET() {
   try {
-    const session = await auth();
+    const session = await auth.api.getSession({ headers: await headers() });
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const { success } = rateLimit(`scenarios-list:${session.user.id}`, { maxRequests: 30, windowMs: 60_000 });
-    if (!success) {
-      return NextResponse.json({ error: "Too many requests. Please try again later." }, { status: 429 });
     }
 
     const rows = await db
@@ -32,14 +27,9 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
-    const session = await auth();
+    const session = await auth.api.getSession({ headers: await headers() });
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const { success } = rateLimit(`scenarios-create:${session.user.id}`, { maxRequests: 10, windowMs: 60_000 });
-    if (!success) {
-      return NextResponse.json({ error: "Too many requests. Please try again later." }, { status: 429 });
     }
 
     const body = await request.json();

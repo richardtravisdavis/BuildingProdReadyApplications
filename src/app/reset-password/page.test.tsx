@@ -38,9 +38,13 @@ vi.mock("@/components/cresora-logo", () => ({
   default: () => <svg data-testid="cresora-logo" />,
 }));
 
-// Mock fetch
-const mockFetch = vi.fn();
-global.fetch = mockFetch;
+// Mock auth-client
+const mockResetPassword = vi.fn();
+vi.mock("@/lib/auth-client", () => ({
+  authClient: {
+    resetPassword: (...args: unknown[]) => mockResetPassword(...args),
+  },
+}));
 
 describe("Reset Password Page", () => {
   beforeEach(() => {
@@ -66,14 +70,11 @@ describe("Reset Password Page", () => {
     await user.click(screen.getByText("Reset password"));
 
     expect(await screen.findByText("Passwords do not match")).toBeInTheDocument();
-    expect(mockFetch).not.toHaveBeenCalled();
+    expect(mockResetPassword).not.toHaveBeenCalled();
   });
 
   it("shows success message after successful reset", async () => {
-    mockFetch.mockResolvedValue({
-      ok: true,
-      json: () => Promise.resolve({ message: "Password reset successfully" }),
-    });
+    mockResetPassword.mockResolvedValue({ data: {}, error: null });
     const user = userEvent.setup();
 
     render(<ResetPasswordPage />);
@@ -89,9 +90,9 @@ describe("Reset Password Page", () => {
   });
 
   it("shows error when API returns failure", async () => {
-    mockFetch.mockResolvedValue({
-      ok: false,
-      json: () => Promise.resolve({ error: "Invalid or expired reset link. Please request a new one." }),
+    mockResetPassword.mockResolvedValue({
+      data: null,
+      error: { message: "Invalid or expired reset link. Please request a new one.", status: 400 },
     });
     const user = userEvent.setup();
 
@@ -108,7 +109,7 @@ describe("Reset Password Page", () => {
   });
 
   it("shows loading state while submitting", async () => {
-    mockFetch.mockReturnValue(new Promise(() => {}));
+    mockResetPassword.mockReturnValue(new Promise(() => {}));
     const user = userEvent.setup();
 
     render(<ResetPasswordPage />);
@@ -121,11 +122,8 @@ describe("Reset Password Page", () => {
     expect(await screen.findByText("Resetting...")).toBeInTheDocument();
   });
 
-  it("calls API with token and password", async () => {
-    mockFetch.mockResolvedValue({
-      ok: true,
-      json: () => Promise.resolve({ message: "Password reset successfully" }),
-    });
+  it("calls authClient with token and password", async () => {
+    mockResetPassword.mockResolvedValue({ data: {}, error: null });
     const user = userEvent.setup();
 
     render(<ResetPasswordPage />);
@@ -135,10 +133,9 @@ describe("Reset Password Page", () => {
     await user.type(confirmInput, "newsecurepass");
     await user.click(screen.getByText("Reset password"));
 
-    expect(mockFetch).toHaveBeenCalledWith("/api/auth/reset-password", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ token: "test-token-123", password: "newsecurepass" }),
+    expect(mockResetPassword).toHaveBeenCalledWith({
+      newPassword: "newsecurepass",
+      token: "test-token-123",
     });
   });
 });
