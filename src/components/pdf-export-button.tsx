@@ -15,10 +15,12 @@ export default function PDFExportButton({ contentRef }: PDFExportButtonProps) {
 
     setExporting(true);
     try {
-      const [{ default: html2canvas }, { default: jsPDF }] = await Promise.all([
+      const [html2canvasModule, jspdfModule] = await Promise.all([
         import("html2canvas"),
         import("jspdf"),
       ]);
+      const html2canvas = html2canvasModule.default ?? html2canvasModule;
+      const jsPDF = jspdfModule.jsPDF ?? jspdfModule.default;
 
       const canvas = await html2canvas(el, {
         backgroundColor: "#00273B",
