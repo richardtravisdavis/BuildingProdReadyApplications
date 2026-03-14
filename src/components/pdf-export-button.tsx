@@ -15,7 +15,7 @@ export default function PDFExportButton({ contentRef }: PDFExportButtonProps) {
 
     setExporting(true);
     try {
-      const [{ toPng }, jspdfModule] = await Promise.all([
+      const [{ toCanvas }, jspdfModule] = await Promise.all([
         import("html-to-image"),
         import("jspdf"),
       ]);
@@ -30,11 +30,11 @@ export default function PDFExportButton({ contentRef }: PDFExportButtonProps) {
       el.style.minWidth = "1400px";
       el.style.position = "absolute";
 
-      let imgData: string;
+      let canvas: HTMLCanvasElement;
       try {
-        imgData = await toPng(el, {
+        canvas = await toCanvas(el, {
           backgroundColor: "#00273B",
-          pixelRatio: 2,
+          pixelRatio: 1.5,
         });
       } finally {
         el.style.width = prevWidth;
@@ -43,41 +43,54 @@ export default function PDFExportButton({ contentRef }: PDFExportButtonProps) {
       }
 
       const pdf = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
-
       const pageWidth = pdf.internal.pageSize.getWidth();
       const pageHeight = pdf.internal.pageSize.getHeight();
+      const margin = 5;
+      const headerHeight = 18;
+      const contentTop = headerHeight + 2;
+      const usableWidth = pageWidth - margin * 2;
+      const usableHeight = pageHeight - contentTop - margin;
 
-      // Branding header
-      pdf.setFillColor(0, 39, 59); // #00273B
-      pdf.rect(0, 0, pageWidth, 18, "F");
-      pdf.setFontSize(14);
-      pdf.setTextColor(252, 98, 0); // #FC6200
-      pdf.text("Cresora ROI Analysis", 10, 12);
-      pdf.setFontSize(9);
-      pdf.setTextColor(156, 163, 175);
-      pdf.text(new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" }), pageWidth - 10, 12, { align: "right" });
+      // Scale image to fill page width
+      const imgWidthMm = usableWidth;
 
-      // Content — measure image dimensions from the data URL
-      const contentTop = 20;
-      const availableHeight = pageHeight - contentTop - 5;
-      const imgWidth = pageWidth - 10;
+      // Slice the canvas into page-sized chunks
+      const pxPerMm = canvas.width / imgWidthMm;
+      const sliceHeightPx = Math.floor(usableHeight * pxPerMm);
+      const totalPages = Math.ceil(canvas.height / sliceHeightPx);
 
-      // Load image to get natural dimensions for aspect ratio
-      const img = new Image();
-      await new Promise<void>((resolve, reject) => {
-        img.onload = () => resolve();
-        img.onerror = reject;
-        img.src = imgData;
-      });
+      for (let page = 0; page < totalPages; page++) {
+        if (page > 0) pdf.addPage();
 
-      const imgHeight = (img.naturalHeight / img.naturalWidth) * imgWidth;
+        // Branding header on every page
+        pdf.setFillColor(0, 39, 59);
+        pdf.rect(0, 0, pageWidth, headerHeight, "F");
+        pdf.setFontSize(14);
+        pdf.setTextColor(252, 98, 0);
+        pdf.text("Cresora ROI Analysis", 10, 12);
+        pdf.setFontSize(9);
+        pdf.setTextColor(156, 163, 175);
+        const dateStr = new Date().toLocaleDateString("en-US", {
+          year: "numeric", month: "long", day: "numeric",
+        });
+        pdf.text(dateStr, pageWidth - 10, 12, { align: "right" });
+        if (totalPages > 1) {
+          pdf.text(`Page ${page + 1} of ${totalPages}`, pageWidth / 2, 12, { align: "center" });
+        }
 
-      if (imgHeight <= availableHeight) {
-        pdf.addImage(imgData, "PNG", 5, contentTop, imgWidth, imgHeight);
-      } else {
-        // Scale to fit
-        const scale = availableHeight / imgHeight;
-        pdf.addImage(imgData, "PNG", 5, contentTop, imgWidth * scale, availableHeight);
+        // Slice this page's portion from the full canvas
+        const srcY = page * sliceHeightPx;
+        const srcH = Math.min(sliceHeightPx, canvas.height - srcY);
+        const sliceMmH = srcH / pxPerMm;
+
+        const slice = document.createElement("canvas");
+        slice.width = canvas.width;
+        slice.height = srcH;
+        const ctx = slice.getContext("2d")!;
+        ctx.drawImage(canvas, 0, srcY, canvas.width, srcH, 0, 0, canvas.width, srcH);
+
+        const sliceData = slice.toDataURL("image/jpeg", 0.85);
+        pdf.addImage(sliceData, "JPEG", margin, contentTop, imgWidthMm, sliceMmH);
       }
 
       pdf.save("cresora-roi-analysis.pdf");
