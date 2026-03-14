@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
@@ -10,12 +10,14 @@ function VerifyEmailConfirmForm() {
   const searchParams = useSearchParams();
   const token = searchParams.get("token");
   const { update } = useSession();
+  const hasVerified = useRef(false);
 
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
   const [error, setError] = useState("");
 
   useEffect(() => {
-    if (!token) return;
+    if (!token || hasVerified.current) return;
+    hasVerified.current = true;
 
     async function verifyEmail() {
       setStatus("loading");
@@ -36,6 +38,7 @@ function VerifyEmailConfirmForm() {
 
         await update();
         setStatus("success");
+        window.location.href = "/dashboard";
       } catch {
         setStatus("error");
         setError("Something went wrong");

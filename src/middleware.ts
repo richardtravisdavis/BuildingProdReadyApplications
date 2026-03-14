@@ -1,6 +1,18 @@
 import { auth } from "@/lib/auth";
+import { db } from "@/db";
+import { users } from "@/db/schema";
+import { eq } from "drizzle-orm";
 
-export default auth((req) => {
+async function isEmailActuallyVerified(userId: string): Promise<boolean> {
+  const [user] = await db
+    .select({ emailVerified: users.emailVerified })
+    .from(users)
+    .where(eq(users.id, userId))
+    .limit(1);
+  return !!user?.emailVerified;
+}
+
+export default auth(async (req) => {
   const isLoggedIn = !!req.auth;
   const pathname = req.nextUrl.pathname;
   const isOnDashboard = pathname.startsWith("/dashboard");
@@ -14,7 +26,11 @@ export default auth((req) => {
   }
 
   if (isOnDashboard && isLoggedIn && !isEmailVerified) {
-    return Response.redirect(new URL("/verify-email", req.nextUrl));
+    // JWT may be stale — check DB before redirecting
+    const verified = await isEmailActuallyVerified(req.auth!.user!.id!);
+    if (!verified) {
+      return Response.redirect(new URL("/verify-email", req.nextUrl));
+    }
   }
 
   // Auth pages: redirect verified users to dashboard
@@ -35,6 +51,14 @@ export default auth((req) => {
   // Verify email pages: redirect already-verified users to dashboard
   if (isOnVerifyEmail && isLoggedIn && isEmailVerified) {
     return Response.redirect(new URL("/dashboard", req.nextUrl));
+  }
+
+  // Verify email pages: check DB if JWT says unverified (may be stale after verification)
+  if (isOnVerifyEmail && isLoggedIn && !isEmailVerified) {
+    const verified = await isEmailActuallyVerified(req.auth!.user!.id!);
+    if (verified) {
+      return Response.redirect(new URL("/dashboard", req.nextUrl));
+    }
   }
 });
 
