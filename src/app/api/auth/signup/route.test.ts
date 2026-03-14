@@ -13,7 +13,12 @@ vi.mock("@/db", () => ({
 }));
 
 vi.mock("@/db/schema", () => ({
-  users: { email: "email" },
+  users: { id: "id", email: "email" },
+  emailVerificationTokens: {},
+}));
+
+vi.mock("@/lib/email", () => ({
+  sendVerificationEmail: vi.fn().mockResolvedValue(undefined),
 }));
 
 vi.mock("drizzle-orm", () => ({
@@ -50,7 +55,9 @@ describe("POST /api/auth/signup", () => {
     };
     (db.select as ReturnType<typeof vi.fn>).mockReturnValue(selectChain);
     (db.insert as ReturnType<typeof vi.fn>).mockReturnValue({
-      values: vi.fn().mockResolvedValue(undefined),
+      values: vi.fn().mockReturnValue({
+        returning: vi.fn().mockResolvedValue([{ id: "new-user-id" }]),
+      }),
     });
   });
 
@@ -99,8 +106,18 @@ describe("POST /api/auth/signup", () => {
   });
 
   it("creates user with hashed password and returns 201", async () => {
-    const valuesMock = vi.fn().mockResolvedValue(undefined);
-    (db.insert as ReturnType<typeof vi.fn>).mockReturnValue({ values: valuesMock });
+    const returningMock = vi.fn().mockResolvedValue([{ id: "new-user-id" }]);
+    const valuesMock = vi.fn().mockReturnValue({ returning: returningMock });
+    const tokenValuesMock = vi.fn().mockResolvedValue(undefined);
+
+    let insertCallCount = 0;
+    (db.insert as ReturnType<typeof vi.fn>).mockImplementation(() => {
+      insertCallCount++;
+      if (insertCallCount === 1) {
+        return { values: valuesMock };
+      }
+      return { values: tokenValuesMock };
+    });
 
     const res = await POST(
       makeRequest({
@@ -122,8 +139,18 @@ describe("POST /api/auth/signup", () => {
   });
 
   it("sets name to null if not provided", async () => {
-    const valuesMock = vi.fn().mockResolvedValue(undefined);
-    (db.insert as ReturnType<typeof vi.fn>).mockReturnValue({ values: valuesMock });
+    const returningMock = vi.fn().mockResolvedValue([{ id: "new-user-id" }]);
+    const valuesMock = vi.fn().mockReturnValue({ returning: returningMock });
+    const tokenValuesMock = vi.fn().mockResolvedValue(undefined);
+
+    let insertCallCount = 0;
+    (db.insert as ReturnType<typeof vi.fn>).mockImplementation(() => {
+      insertCallCount++;
+      if (insertCallCount === 1) {
+        return { values: valuesMock };
+      }
+      return { values: tokenValuesMock };
+    });
 
     const res = await POST(
       makeRequest({ email: "no-name@example.com", password: "12345678" })

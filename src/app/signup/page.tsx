@@ -47,7 +47,7 @@ export default function SignupPage() {
     if (result?.error) {
       router.push("/login");
     } else {
-      router.push("/dashboard");
+      router.push("/verify-email");
     }
   }
 
