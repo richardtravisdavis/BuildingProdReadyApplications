@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import { auth, signOut } from "@/lib/auth";
+import { auth } from "@/lib/auth";
+import { headers } from "next/headers";
 import DashboardSidebar from "@/components/dashboard-sidebar";
 
 export const metadata: Metadata = {
@@ -11,11 +12,23 @@ export default async function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const session = await auth();
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
 
   async function signOutAction() {
     "use server";
-    await signOut({ redirectTo: "/" });
+    const { auth: serverAuth } = await import("@/lib/auth");
+    const { headers: getHeaders } = await import("next/headers");
+    const hdrs = await getHeaders();
+    // Get the session to revoke it
+    const currentSession = await serverAuth.api.getSession({ headers: hdrs });
+    if (currentSession) {
+      // Revoke the session by calling the sign-out endpoint
+      await serverAuth.api.signOut({ headers: hdrs });
+    }
+    const { redirect } = await import("next/navigation");
+    redirect("/");
   }
 
   return (

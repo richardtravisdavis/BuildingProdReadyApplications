@@ -1,12 +1,16 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
-vi.mock("@/lib/rate-limit", () => ({
-  rateLimit: () => ({ success: true, remaining: 10 }),
+const mockGetSession = vi.fn();
+vi.mock("@/lib/auth", () => ({
+  auth: {
+    api: {
+      getSession: (...args: unknown[]) => mockGetSession(...args),
+    },
+  },
 }));
 
-const mockAuth = vi.fn();
-vi.mock("@/lib/auth", () => ({
-  auth: () => mockAuth(),
+vi.mock("next/headers", () => ({
+  headers: vi.fn(() => Promise.resolve(new Headers())),
 }));
 
 const mockSelect = vi.fn();
@@ -56,11 +60,11 @@ function makeRequest(body: Record<string, unknown>) {
 describe("GET /api/scenarios", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mockAuth.mockResolvedValue({ user: { id: "user-1" } });
+    mockGetSession.mockResolvedValue({ user: { id: "user-1" } });
   });
 
   it("returns 401 if not authenticated", async () => {
-    mockAuth.mockResolvedValue(null);
+    mockGetSession.mockResolvedValue(null);
     const res = await GET();
     expect(res.status).toBe(401);
   });
@@ -85,11 +89,11 @@ describe("GET /api/scenarios", () => {
 describe("POST /api/scenarios", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mockAuth.mockResolvedValue({ user: { id: "user-1" } });
+    mockGetSession.mockResolvedValue({ user: { id: "user-1" } });
   });
 
   it("returns 401 if not authenticated", async () => {
-    mockAuth.mockResolvedValue(null);
+    mockGetSession.mockResolvedValue(null);
     const res = await POST(makeRequest({ name: "Test", inputs: validInputs }));
     expect(res.status).toBe(401);
   });

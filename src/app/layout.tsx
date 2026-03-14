@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Geist_Mono } from "next/font/google";
 import WebVitals from "@/components/web-vitals";
-import AuthSessionProvider from "@/components/session-provider";
 import "./globals.css";
 
 const geistMono = Geist_Mono({
@@ -16,7 +15,7 @@ export const metadata: Metadata = {
   },
   description:
     "Compare merchant processing costs and discover how much you could save with the Cresora ROI calculator.",
-  metadataBase: new URL(process.env.AUTH_URL || "http://localhost:3000"),
+  metadataBase: new URL(process.env.BETTER_AUTH_URL || "http://localhost:3000"),
   openGraph: {
     title: "Cresora Commerce — ROI Calculator",
     description:
@@ -43,10 +42,8 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark">
       <body className={`${geistMono.variable} antialiased`}>
-        <AuthSessionProvider>
-          <WebVitals />
-          {children}
-        </AuthSessionProvider>
+        <WebVitals />
+        {children}
       </body>
     </html>
   );

@@ -3,10 +3,14 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import LoginPage from "./page";
 
-// Mock next-auth/react
-const mockSignIn = vi.fn();
-vi.mock("next-auth/react", () => ({
-  signIn: (...args: unknown[]) => mockSignIn(...args),
+// Mock auth-client
+const mockSignInEmail = vi.fn();
+vi.mock("@/lib/auth-client", () => ({
+  authClient: {
+    signIn: {
+      email: (...args: unknown[]) => mockSignInEmail(...args),
+    },
+  },
 }));
 
 // Mock next/navigation
@@ -68,7 +72,7 @@ describe("Login Page", () => {
   });
 
   it("shows error on invalid credentials", async () => {
-    mockSignIn.mockResolvedValue({ error: "CredentialsSignin" });
+    mockSignInEmail.mockResolvedValue({ error: { message: "Invalid credentials", status: 401 } });
     const user = userEvent.setup();
 
     render(<LoginPage />);
@@ -81,7 +85,7 @@ describe("Login Page", () => {
   });
 
   it("redirects to dashboard on successful login", async () => {
-    mockSignIn.mockResolvedValue({ error: null });
+    mockSignInEmail.mockResolvedValue({ error: null });
     const user = userEvent.setup();
 
     render(<LoginPage />);
@@ -95,7 +99,7 @@ describe("Login Page", () => {
 
   it("shows loading state while submitting", async () => {
     // Never resolve the signIn call
-    mockSignIn.mockReturnValue(new Promise(() => {}));
+    mockSignInEmail.mockReturnValue(new Promise(() => {}));
     const user = userEvent.setup();
 
     render(<LoginPage />);

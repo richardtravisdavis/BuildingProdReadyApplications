@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import AuthLayout from "@/components/auth-layout";
+import { authClient } from "@/lib/auth-client";
 
 export default function ForgotPasswordPage() {
   const [submitted, setSubmitted] = useState(false);
@@ -20,15 +21,13 @@ export default function ForgotPasswordPage() {
     const formData = new FormData(e.currentTarget);
     const email = formData.get("email") as string;
 
-    const res = await fetch("/api/auth/forgot-password", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email }),
+    const { error } = await authClient.requestPasswordReset({
+      email,
+      redirectTo: "/reset-password",
     });
 
-    if (!res.ok) {
-      const data = await res.json();
-      setError(data.error || "Something went wrong");
+    if (error) {
+      setError(error.message ?? "Something went wrong");
       setLoading(false);
       return;
     }

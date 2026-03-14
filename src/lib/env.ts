@@ -11,8 +11,8 @@ function requireEnv(name: string): string {
 
 export const env = {
   DATABASE_URL: requireEnv("DATABASE_URL"),
-  AUTH_SECRET: requireEnv("AUTH_SECRET"),
+  BETTER_AUTH_SECRET: requireEnv("BETTER_AUTH_SECRET"),
+  BETTER_AUTH_URL: requireEnv("BETTER_AUTH_URL"),
   RESEND_API_KEY: requireEnv("RESEND_API_KEY"),
-  APP_URL: requireEnv("APP_URL"),
   EMAIL_FROM: requireEnv("EMAIL_FROM"),
 };

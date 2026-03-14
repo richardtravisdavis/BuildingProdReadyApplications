@@ -1,13 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import AuthLayout from "@/components/auth-layout";
+import { authClient } from "@/lib/auth-client";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -23,13 +23,16 @@ export default function LoginPage() {
     const email = formData.get("email") as string;
     const password = formData.get("password") as string;
 
-    const result = await signIn("credentials", {
+    const { error } = await authClient.signIn.email({
       email,
       password,
-      redirect: false,
     });
 
-    if (result?.error) {
+    if (error) {
+      if (error.status === 403) {
+        router.push("/verify-email");
+        return;
+      }
       setError("Invalid email or password");
       setLoading(false);
     } else {

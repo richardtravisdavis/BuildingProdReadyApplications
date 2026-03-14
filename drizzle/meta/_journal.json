@@ -29,6 +29,13 @@
       "when": 1773439120239,
       "tag": "0003_mean_loa",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1773503967871,
+      "tag": "0004_better_auth_migration",
+      "breakpoints": true
     }
   ]
 }

@@ -1,24 +1,19 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
+import { headers } from "next/headers";
 import { db } from "@/db";
 import { scenarios } from "@/db/schema";
 import { eq, and } from "drizzle-orm";
 import { updateScenarioSchema } from "@/lib/scenario-schema";
-import { rateLimit } from "@/lib/rate-limit";
 
 export async function PATCH(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await auth();
+    const session = await auth.api.getSession({ headers: await headers() });
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const { success } = rateLimit(`scenarios-update:${session.user.id}`, { maxRequests: 10, windowMs: 60_000 });
-    if (!success) {
-      return NextResponse.json({ error: "Too many requests. Please try again later." }, { status: 429 });
     }
 
     const { id } = await params;
@@ -59,14 +54,9 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await auth();
+    const session = await auth.api.getSession({ headers: await headers() });
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const { success } = rateLimit(`scenarios-delete:${session.user.id}`, { maxRequests: 10, windowMs: 60_000 });
-    if (!success) {
-      return NextResponse.json({ error: "Too many requests. Please try again later." }, { status: 429 });
     }
 
     const { id } = await params;
