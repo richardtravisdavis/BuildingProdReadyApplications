@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist_Mono } from "next/font/google";
 import WebVitals from "@/components/web-vitals";
+import AuthSessionProvider from "@/components/session-provider";
 import "./globals.css";
 
 const geistMono = Geist_Mono({
@@ -42,8 +43,10 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark">
       <body className={`${geistMono.variable} antialiased`}>
-        <WebVitals />
-        {children}
+        <AuthSessionProvider>
+          <WebVitals />
+          {children}
+        </AuthSessionProvider>
       </body>
     </html>
   );
