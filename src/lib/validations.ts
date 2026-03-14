@@ -29,6 +29,10 @@ export const resetPasswordSchema = z.object({
     .max(128, "Password must be less than 128 characters"),
 });
 
+export const verifyEmailSchema = z.object({
+  token: z.string().min(1, "Token is required"),
+});
+
 export const passwordSchema = z.object({
   currentPassword: z.string().min(1, "Current password is required"),
   newPassword: z

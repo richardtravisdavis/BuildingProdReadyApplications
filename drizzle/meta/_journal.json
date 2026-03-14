@@ -22,6 +22,13 @@
       "when": 1773426297034,
       "tag": "0002_purple_hellfire_club",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1773439120239,
+      "tag": "0003_mean_loa",
+      "breakpoints": true
     }
   ]
 }

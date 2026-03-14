@@ -37,14 +37,26 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           id: user.id,
           name: user.name,
           email: user.email,
+          emailVerified: user.emailVerified,
         };
       },
     }),
   ],
   callbacks: {
-    async jwt({ token, user }) {
+    async jwt({ token, user, trigger }) {
       if (user) {
         token.id = user.id;
+        token.emailVerified = user.emailVerified ?? null;
+      }
+      if (trigger === "update" && token.id) {
+        const [dbUser] = await db
+          .select({ emailVerified: users.emailVerified })
+          .from(users)
+          .where(eq(users.id, token.id as string))
+          .limit(1);
+        if (dbUser) {
+          token.emailVerified = dbUser.emailVerified ?? null;
+        }
       }
       return token;
     },
@@ -52,6 +64,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       if (token.id) {
         session.user.id = token.id as string;
       }
+      session.user.emailVerified = (token.emailVerified as Date | null) ?? null;
       return session;
     },
   },
