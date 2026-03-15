@@ -29,8 +29,8 @@ export default function LoginPage() {
     });
 
     if (error) {
-      if (error.status === 403) {
-        router.push("/verify-email");
+      if (error.status === 403 || error.code === "EMAIL_NOT_VERIFIED") {
+        router.push(`/verify-email?email=${encodeURIComponent(email)}`);
         return;
       }
       setError("Invalid email or password");
