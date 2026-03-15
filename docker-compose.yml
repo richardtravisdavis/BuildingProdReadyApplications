@@ -1,0 +1,78 @@
+# Local development with Docker
+#
+# Prerequisites:
+#   Set required env vars before running (or use a .env file):
+#     export DATABASE_URL=postgresql://postgres:postgres@db:5432/cresora
+#     export BETTER_AUTH_SECRET=$(openssl rand -base64 32)
+#     export BETTER_AUTH_URL=http://localhost:3000
+#     export RESEND_API_KEY=re_your_key
+#     export EMAIL_FROM=onboarding@resend.dev
+#
+# Usage:
+#   docker compose up                    # start db, run migrations, start app
+#   docker compose down                  # stop everything (data persists)
+#   docker compose down -v               # stop and delete database data
+#
+# Migration rollback:
+#   There is no automated rollback. If a migration fails, the app will not
+#   start. Fix the migration, then run: docker compose up --build migrate
+
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: cresora
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  migrate:
+    build:
+      context: .
+      target: builder
+      args:
+        DATABASE_URL: ${DATABASE_URL}
+        BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET}
+        BETTER_AUTH_URL: ${BETTER_AUTH_URL}
+        RESEND_API_KEY: ${RESEND_API_KEY}
+        EMAIL_FROM: ${EMAIL_FROM}
+    command: npx drizzle-kit migrate
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+    depends_on:
+      db:
+        condition: service_healthy
+
+  app:
+    build:
+      context: .
+      args:
+        DATABASE_URL: ${DATABASE_URL}
+        BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET}
+        BETTER_AUTH_URL: ${BETTER_AUTH_URL}
+        RESEND_API_KEY: ${RESEND_API_KEY}
+        EMAIL_FROM: ${EMAIL_FROM}
+    ports:
+      - "3000:3000"
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+      BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET}
+      BETTER_AUTH_URL: ${BETTER_AUTH_URL}
+      RESEND_API_KEY: ${RESEND_API_KEY}
+      EMAIL_FROM: ${EMAIL_FROM}
+    depends_on:
+      db:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+
+volumes:
+  pgdata:
