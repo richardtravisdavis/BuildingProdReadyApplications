@@ -1,0 +1,46 @@
+name: Promote to Staging
+
+on:
+  workflow_dispatch:
+
+jobs:
+  promote:
+    name: Create PR from dev → staging
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Create promotion PR
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          existing=$(gh pr list --base staging --head dev --state open --json number --jq '.[0].number')
+          if [ -n "$existing" ]; then
+            echo "PR #$existing already exists for dev → staging"
+            echo "https://github.com/${{ github.repository }}/pull/$existing"
+            exit 0
+          fi
+
+          gh pr create \
+            --base staging \
+            --head dev \
+            --title "Promote dev → staging" \
+            --body "$(cat <<'BODY'
+          ## Promotion
+
+          Automated PR to promote `dev` changes to `staging`.
+
+          ### Checklist
+          - [ ] All CI checks pass on dev
+          - [ ] Changes reviewed and tested locally
+          - [ ] Database migrations are backwards-compatible
+
+          Merging this PR will:
+          1. Run database migrations against the staging database
+          2. Deploy to the staging environment
+          3. Run a post-deploy health check
+          BODY
+          )"

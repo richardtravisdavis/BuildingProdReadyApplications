@@ -118,11 +118,42 @@ In Docker, migrations run automatically before the app starts. If a migration fa
 
 There is no automated rollback. To revert a migration, write a new migration that undoes the changes.
 
-## What Happens When Code Is Committed
+## CI/CD Pipeline
 
-1. **Pull request created** → CI runs build, lint, and all tests. Next.js build cache speeds up repeat builds.
-2. **PR merged to `dev`** → Vercel deploys to preview environment.
-3. **Database migrations** are currently run manually before deploy. Automated migration pipeline is planned (#24).
+### Environment Flow
+
+```
+Feature Branch → dev (Development) → staging (Staging) → main (Production)
+```
+
+### What Happens When Code Is Committed
+
+1. **Pull request created** → CI runs build, lint, tests, and Docker build
+2. **PR merged to `dev`** → Vercel deploys to development preview
+3. **Promote to staging** → Run the "Promote to Staging" workflow in GitHub Actions (creates a PR from `dev` → `staging`). Merging runs migrations and deploys to staging.
+4. **Promote to production** → Run the "Promote to Production" workflow (creates a PR from `staging` → `main`). Requires environment approval. Merging runs migrations and deploys to production.
+
+### Promotion Commands
+
+Promotions are triggered via GitHub Actions workflows (Actions tab → workflow → Run workflow):
+
+- **Promote to Staging**: Creates a PR from `dev` → `staging`
+- **Promote to Production**: Creates a PR from `staging` → `main` (requires approval)
+
+### Database Migrations in Pipeline
+
+Migrations run automatically as part of each environment's deploy:
+- **Staging**: Runs `drizzle-kit migrate` against the staging database before deploy
+- **Production**: Runs `drizzle-kit migrate` against the production database before deploy
+
+Each environment uses its own `DATABASE_URL` stored as a GitHub Actions secret.
+
+### Rollback
+
+If a production deploy fails the health check:
+1. Revert the merge commit on `main`
+2. Push the revert — Vercel redeploys the previous version
+3. If a migration needs reverting, create a new migration that undoes the changes
 
 ## Health Check
 

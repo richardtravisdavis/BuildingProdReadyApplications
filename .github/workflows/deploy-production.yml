@@ -1,0 +1,53 @@
+name: Deploy to Production
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  migrate:
+    name: Run Database Migrations
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run migrations
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: npx drizzle-kit migrate
+
+  health-check:
+    name: Post-Deploy Health Check
+    runs-on: ubuntu-latest
+    needs: [migrate]
+    environment: production
+
+    steps:
+      - name: Wait for Vercel deployment
+        run: sleep 90
+
+      - name: Health check
+        env:
+          PRODUCTION_URL: ${{ vars.PRODUCTION_URL }}
+        run: |
+          if [ -z "$PRODUCTION_URL" ]; then
+            echo "PRODUCTION_URL not set, skipping health check"
+            exit 0
+          fi
+          status=$(curl -s -o /dev/null -w "%{http_code}" "$PRODUCTION_URL/api/health")
+          if [ "$status" != "200" ]; then
+            echo "Health check failed with status $status"
+            echo "ROLLBACK: Revert the merge commit and redeploy"
+            exit 1
+          fi
+          echo "Health check passed"
