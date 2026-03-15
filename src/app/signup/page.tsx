@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,7 +9,6 @@ import AuthLayout from "@/components/auth-layout";
 import { authClient } from "@/lib/auth-client";
 
 export default function SignupPage() {
-  const router = useRouter();
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -36,7 +34,7 @@ export default function SignupPage() {
       return;
     }
 
-    router.push("/verify-email");
+    window.location.href = `/verify-email?email=${encodeURIComponent(email)}`;
   }
 
   return (

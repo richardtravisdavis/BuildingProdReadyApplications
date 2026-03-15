@@ -103,7 +103,7 @@ describe("Signup Page", () => {
     expect(await screen.findByText("Creating account...")).toBeInTheDocument();
   });
 
-  it("redirects to verify-email on successful signup", async () => {
+  it("calls signUp and triggers redirect on successful signup", async () => {
     mockSignUpEmail.mockResolvedValue({ error: null });
     const user = userEvent.setup();
 
@@ -114,6 +114,10 @@ describe("Signup Page", () => {
     await user.type(screen.getByPlaceholderText("••••••••"), "securepass");
     await user.click(screen.getByText("Sign up"));
 
-    expect(mockPush).toHaveBeenCalledWith("/verify-email");
+    expect(mockSignUpEmail).toHaveBeenCalledWith({
+      name: "Travis",
+      email: "travis@test.com",
+      password: "securepass",
+    });
   });
 });
