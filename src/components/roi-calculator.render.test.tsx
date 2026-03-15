@@ -18,6 +18,12 @@ vi.mock("recharts", () => ({
 
 import ROICalculator from "./roi-calculator";
 
+// Helper to find a tab button by its full label text (rendered inside a hidden span)
+function getTabButton(label: string) {
+  const span = screen.getByText(label);
+  return span.closest("button")!;
+}
+
 describe("ROICalculator", () => {
   it("renders without crashing", () => {
     render(<ROICalculator />);
@@ -34,15 +40,15 @@ describe("ROICalculator", () => {
 
   it("starts on the ISV Portfolio Input tab", () => {
     render(<ROICalculator />);
-    const tab = screen.getByText("ISV Portfolio Input");
+    const tab = getTabButton("ISV Portfolio Input");
     expect(tab.className).toContain("FC6200");
   });
 
   it("switches to ISV ROI Summary tab and renders content", async () => {
     const user = userEvent.setup();
     render(<ROICalculator />);
-    await user.click(screen.getByText("ISV ROI Summary"));
-    expect(screen.getByText("ISV ROI Summary").className).toContain("FC6200");
+    await user.click(getTabButton("ISV ROI Summary"));
+    expect(getTabButton("ISV ROI Summary").className).toContain("FC6200");
     // Summary tab should show annual savings KPIs
     expect(screen.getByText("Total Annual Savings")).toBeInTheDocument();
     expect(screen.getByText("Total w/ Residual Uplift")).toBeInTheDocument();
@@ -64,8 +70,8 @@ describe("ROICalculator", () => {
   it("switches to Merchant-Level ROI tab and renders content", async () => {
     const user = userEvent.setup();
     render(<ROICalculator />);
-    await user.click(screen.getByText("Merchant-Level ROI"));
-    expect(screen.getByText("Merchant-Level ROI").className).toContain("FC6200");
+    await user.click(getTabButton("Merchant-Level ROI"));
+    expect(getTabButton("Merchant-Level ROI").className).toContain("FC6200");
     // Should show per-merchant KPIs
     expect(screen.getByText("Annual Card Volume")).toBeInTheDocument();
     expect(screen.getByText("Annual ACH Volume")).toBeInTheDocument();
@@ -86,8 +92,8 @@ describe("ROICalculator", () => {
   it("switches to Cresora Assumptions tab and renders content", async () => {
     const user = userEvent.setup();
     render(<ROICalculator />);
-    await user.click(screen.getByText("Cresora Assumptions"));
-    expect(screen.getByText("Cresora Assumptions").className).toContain("FC6200");
+    await user.click(getTabButton("Cresora Assumptions"));
+    expect(getTabButton("Cresora Assumptions").className).toContain("FC6200");
     // Should show adjustment notice
     expect(screen.getByText(/Adjust these to match/)).toBeInTheDocument();
     // Should show assumption sections
@@ -179,7 +185,7 @@ describe("ROICalculator", () => {
     const select = screen.getByDisplayValue("Interchange-Plus (IC+)");
     await user.selectOptions(select, "flat");
     // Go to assumptions tab
-    await user.click(screen.getByText("Cresora Assumptions"));
+    await user.click(getTabButton("Cresora Assumptions"));
     expect(screen.getByText("Cresora Flat Rate")).toBeInTheDocument();
   });
 
@@ -188,14 +194,14 @@ describe("ROICalculator", () => {
     render(<ROICalculator />);
     const select = screen.getByDisplayValue("Interchange-Plus (IC+)");
     await user.selectOptions(select, "tiered");
-    await user.click(screen.getByText("Cresora Assumptions"));
+    await user.click(getTabButton("Cresora Assumptions"));
     expect(screen.getByText(/converts to IC\+/)).toBeInTheDocument();
   });
 
   it("shows exclusivity contract note on summary tab", async () => {
     const user = userEvent.setup();
     render(<ROICalculator />);
-    await user.click(screen.getByText("ISV ROI Summary"));
+    await user.click(getTabButton("ISV ROI Summary"));
     expect(screen.getByText(/Exclusivity clause restricts/)).toBeInTheDocument();
   });
 });
