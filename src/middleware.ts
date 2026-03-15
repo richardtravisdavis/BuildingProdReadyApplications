@@ -27,9 +27,8 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL("/verify-email", request.url));
   }
 
-  if (isOnVerifyEmail && !session) {
-    return NextResponse.redirect(new URL("/login", request.url));
-  }
+  // Note: verify-email pages are accessible without a session because
+  // better-auth blocks sign-in for unverified users (no session created)
 
   if (isOnVerifyEmail && session?.user.emailVerified) {
     return NextResponse.redirect(new URL("/dashboard", request.url));

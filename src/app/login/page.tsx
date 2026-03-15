@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,7 +9,6 @@ import AuthLayout from "@/components/auth-layout";
 import { authClient } from "@/lib/auth-client";
 
 export default function LoginPage() {
-  const router = useRouter();
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -29,14 +27,14 @@ export default function LoginPage() {
     });
 
     if (error) {
-      if (error.status === 403) {
-        router.push("/verify-email");
+      if (error.status === 403 || error.code === "EMAIL_NOT_VERIFIED") {
+        window.location.href = `/verify-email?email=${encodeURIComponent(email)}`;
         return;
       }
       setError("Invalid email or password");
       setLoading(false);
     } else {
-      router.push("/dashboard");
+      window.location.href = "/dashboard";
     }
   }
 

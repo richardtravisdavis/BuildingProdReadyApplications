@@ -1,6 +1,7 @@
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { db } from "@/db";
+import * as schema from "@/db/schema";
 import { nextCookies } from "better-auth/next-js";
 import { Resend } from "resend";
 import bcrypt from "bcryptjs";
@@ -10,6 +11,12 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 export const auth = betterAuth({
   database: drizzleAdapter(db, {
     provider: "pg",
+    schema: {
+      user: schema.users,
+      session: schema.sessions,
+      account: schema.accounts,
+      verification: schema.verifications,
+    },
   }),
   emailAndPassword: {
     enabled: true,
