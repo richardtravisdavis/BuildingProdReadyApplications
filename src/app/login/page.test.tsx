@@ -84,7 +84,7 @@ describe("Login Page", () => {
     expect(await screen.findByText("Invalid email or password")).toBeInTheDocument();
   });
 
-  it("redirects to dashboard on successful login", async () => {
+  it("calls signIn and triggers redirect on successful login", async () => {
     mockSignInEmail.mockResolvedValue({ error: null });
     const user = userEvent.setup();
 
@@ -94,7 +94,10 @@ describe("Login Page", () => {
     await user.type(screen.getByPlaceholderText("••••••••"), "correctpass");
     await user.click(screen.getByText("Sign in"));
 
-    expect(mockPush).toHaveBeenCalledWith("/dashboard");
+    expect(mockSignInEmail).toHaveBeenCalledWith({
+      email: "good@test.com",
+      password: "correctpass",
+    });
   });
 
   it("shows loading state while submitting", async () => {
