@@ -30,13 +30,13 @@ export default function LoginPage() {
 
     if (error) {
       if (error.status === 403 || error.code === "EMAIL_NOT_VERIFIED") {
-        router.push(`/verify-email?email=${encodeURIComponent(email)}`);
+        window.location.href = `/verify-email?email=${encodeURIComponent(email)}`;
         return;
       }
       setError("Invalid email or password");
       setLoading(false);
     } else {
-      router.push("/dashboard");
+      window.location.href = "/dashboard";
     }
   }
 
