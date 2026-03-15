@@ -1,0 +1,49 @@
+name: Promote to Production
+
+on:
+  workflow_dispatch:
+
+jobs:
+  promote:
+    name: Create PR from staging → main
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Create promotion PR
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          existing=$(gh pr list --base main --head staging --state open --json number --jq '.[0].number')
+          if [ -n "$existing" ]; then
+            echo "PR #$existing already exists for staging → main"
+            echo "https://github.com/${{ github.repository }}/pull/$existing"
+            exit 0
+          fi
+
+          gh pr create \
+            --base main \
+            --head staging \
+            --title "Promote staging → production" \
+            --body "$(cat <<'BODY'
+          ## Production Promotion
+
+          Automated PR to promote `staging` changes to `main` (production).
+
+          ### Checklist
+          - [ ] All staging checks pass (migrations, health check)
+          - [ ] Staging environment manually verified
+          - [ ] No known issues blocking release
+
+          Merging this PR will:
+          1. Run database migrations against the production database
+          2. Deploy to the production environment
+          3. Run a post-deploy health check
+
+          **This requires environment approval before the workflow runs.**
+          BODY
+          )"
