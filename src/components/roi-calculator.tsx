@@ -651,23 +651,24 @@ export default function ROICalculator() {
   return (
     <div className="text-gray-100 font-sans">
       <div className="max-w-7xl mx-auto px-4 py-6">
-        <div className="flex gap-2 mb-8 border-b border-[#003350] overflow-x-auto" style={{ maskImage: "linear-gradient(to right, black 90%, transparent)", WebkitMaskImage: "linear-gradient(to right, black 90%, transparent)" }}>
+        <div className="flex gap-1 sm:gap-2 mb-8 border-b border-[#003350]">
           {[
-            { id: "isv", label: "ISV Portfolio Input" },
-            { id: "summary", label: "ISV ROI Summary" },
-            { id: "merchant", label: "Merchant-Level ROI" },
-            { id: "assumptions", label: "Cresora Assumptions" },
+            { id: "isv", label: "ISV Portfolio Input", shortLabel: "Portfolio" },
+            { id: "summary", label: "ISV ROI Summary", shortLabel: "ROI Summary" },
+            { id: "merchant", label: "Merchant-Level ROI", shortLabel: "Merchant" },
+            { id: "assumptions", label: "Cresora Assumptions", shortLabel: "Assumptions" },
           ].map((t) => (
             <button
               key={t.id}
               onClick={() => setTab(t.id)}
-              className={`px-4 py-2.5 text-sm font-medium border-b-2 transition-all -mb-px whitespace-nowrap ${
+              className={`px-2 sm:px-4 py-2.5 text-xs sm:text-sm font-medium border-b-2 transition-all -mb-px whitespace-nowrap ${
                 tab === t.id
                   ? "border-[#FC6200] text-[#FC6200]"
                   : "border-transparent text-gray-400 hover:text-gray-200"
               }`}
             >
-              {t.label}
+              <span className="sm:hidden">{t.shortLabel}</span>
+              <span className="hidden sm:inline">{t.label}</span>
             </button>
           ))}
         </div>
