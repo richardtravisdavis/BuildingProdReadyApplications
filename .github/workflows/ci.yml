@@ -44,3 +44,13 @@ jobs:
 
       - name: Test
         run: npm run test
+
+      - name: Docker build
+        run: |
+          docker build \
+            --build-arg DATABASE_URL="$DATABASE_URL" \
+            --build-arg BETTER_AUTH_SECRET="$BETTER_AUTH_SECRET" \
+            --build-arg BETTER_AUTH_URL="$BETTER_AUTH_URL" \
+            --build-arg RESEND_API_KEY="$RESEND_API_KEY" \
+            --build-arg EMAIL_FROM="$EMAIL_FROM" \
+            -t cresora-roi-calculator:ci .
